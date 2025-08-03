@@ -1,0 +1,27 @@
+{
+  "tracker_map": {
+    "type": "map",
+    "dropshadow": false,
+    "h_alignment": "center",
+    "v_alignment": "center",
+    "max_height": 1000,
+    "max_width": 1000,
+    "maps": [
+      "main_map"
+    ]
+  },
+  "tracker_default": {
+    "type": "array",
+    "content": [
+      {
+        "type": "layout",
+        "key": "tracker_map"
+      },
+      {
+        "type": "layout",
+        "key": "tracker_items"
+      }
+    ],
+    "orientation": "vertical"
+  }
+}
