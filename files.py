@@ -1,7 +1,7 @@
 import os
 import shutil
 
-import orjson
+import json
 from utils import *
 
 
@@ -11,8 +11,8 @@ def write_json_file(json_object: any, pack_root: str, file_location: str):
     full_filepath: str = os.path.join(pack_root, file_location)
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
-    with open(full_filepath, 'wb') as file:
-        json_dump = orjson.dumps(json_object, option=orjson.OPT_INDENT_2)
+    with open(full_filepath, 'w') as file:
+        json_dump = json.dumps(json_object, indent=4)
         file.write(json_dump)
 
 
