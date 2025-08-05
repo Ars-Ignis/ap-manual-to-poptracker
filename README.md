@@ -19,7 +19,9 @@ script takes care of everything else, including:
 ## How do I use it?
 1. [Install Python](https://www.python.org/downloads/)
 2. Download the source code
-3. In the directory where you downloaded the source code, run `python convert.py <path_to_Manual_APWorld>`
+3. In the directory where you downloaded the source code, open a command prompt.
+4. In that command prompt, run `python convert.py <path_to_Manual_APWorld>`, where `<path_to_Manual_APWorld>` is the 
+full filepath to the Manual APWorld you're trying to convert.
 
 That's it!
 
@@ -29,11 +31,15 @@ does not already exist. If not provided, it defaults to a folder named `poptrack
 - `--datapackage_URL`: The URL of an Archipelago datapackage that include your Manual APWorld. Most likely found by 
 running your own copy of the WebHost from source. If you're not sure how to do that, don't worry about it; it is likely 
 to work without it, and at worst you'll need to manually update the `item_mapping.lua` and `location_mapping.lua` files 
-produced by the tool.
+produced by the tool. Note: use of this feature requires the Python `requests` module. To install it, you will first 
+need pip, which can be installed by running `python -m ensurepip --upgrade` from the command line prompt. After 
+installing pip, run `pip install requests` to install the requests module.
 - `--author`: The name by which you wish to be credited in the PopTracker pack's manifest. Can be manually added after
 the fact.
 
 ## What are the tool's limitations?
 As previously mentioned, this tool only produces placeholder images and arbitrary location coordinates. Additionally, it
 only works with the raw json data in the APWorld; if your Manual APWorld makes extensive use of hooks, especially to 
-define logic, items, or locations, this tool won't be able to detect that.
+define logic, items, or locations, this tool won't be able to detect that. It also struggles with slashes in location 
+names, due to how PopTracker identifies sections. I haven't yet come up with a satisfactory solution to this problem,
+but I am working on it.
