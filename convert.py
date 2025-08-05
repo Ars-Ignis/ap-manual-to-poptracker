@@ -1,7 +1,5 @@
 import argparse
 import zipfile as zip
-import json
-import requests
 from items import *
 from locations import *
 from files import *
@@ -71,13 +69,27 @@ if __name__ == "__main__":
 
     game_name: str = f"Manual_{game['game']}_{game['creator']}"
 
+    item_name_to_id = None
+    location_name_to_id = None
     if args.datapackage_URL:
-        games_dict: dict[str, any] = requests.get(args.datapackage_URL).json()["games"]
-        item_name_to_id: dict[str, int] = games_dict[game_name]["item_name_to_id"]
-        location_name_to_id: dict[str, int] = games_dict[game_name]["location_name_to_id"]
-    else:
-        item_name_to_id = None
-        location_name_to_id = None
+        try:
+            import requests
+            try:
+                games_dict: dict[str, any] = requests.get(args.datapackage_URL).json()["games"]
+                if game_name in games_dict:
+                    item_name_to_id: dict[str, int] = games_dict[game_name]["item_name_to_id"]
+                    location_name_to_id: dict[str, int] = games_dict[game_name]["location_name_to_id"]
+                else:
+                    print(f"Warning! The datapackage at {args.datapackage_URL} does not contain an entry for game "
+                          f"{game_name}. Are you sure your world is running on that web host? Continuing with "
+                          f"estimated item and location IDs.")
+            except requests.exceptions.RequestException:
+                print(f"Warning! could not reach and read the datapackage at {args.datapackage_URL}. Continuing with "
+                      f"estimated item and location IDs.")
+        except ImportError:
+            print("Warning! You are trying to use a datapackage URL without the requests module installed. " 
+                  "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
+                  "try again if you need IDs from the datapackage.")
 
     write_common_lua_scripts(item_groups, args.output_path)
     write_item_mapping_script(items, item_name_to_id, args.output_path)
