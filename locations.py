@@ -11,6 +11,8 @@ def build_region_graph(regions: dict[str, any]) -> dict[str, list[str]]:
         region_graph[region] = region_data["connects_to"]
         if "starting" in region_data and region_data["starting"]:
             region_graph["__start__"] = [region]
+    if "__start__" not in region_graph:
+        region_graph["__start__"] = list(region_graph.keys())
     return region_graph
 
 
