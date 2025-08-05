@@ -2,7 +2,7 @@ ScriptHost:LoadScript("scripts/archipelago/item_mapping.lua")
 ScriptHost:LoadScript("scripts/archipelago/location_mapping.lua")
 
 CUR_INDEX = -1
-HOSTED = {}
+SLOT_DATA = nil
 
 --AUTOTRACKER_ENABLE_DEBUG_LOGGING_AP = true
 
@@ -24,6 +24,15 @@ function onClear(slot_data)
         end
     end
     CUR_INDEX = -1
+    SLOT_DATA = slot_data
+    if SLOT_DATA ~= nil then
+        for key, value in pairs(SLOT_DATA) do
+            local flag_obj = Tracker:FindObjectForCode(key)
+            if flag_obj ~= nil then
+                flag_obj.Active = (v ~= 0)
+            end
+        end
+    end
     -- reset locations
     for _, v in pairs(ID_TO_LOCATION_MAP) do
         if v[1] then
@@ -64,10 +73,6 @@ function onClear(slot_data)
                 print(string.format("onClear: could not find object for code %s", v[1]))
             end
         end
-    end
-    -- reset hosted items
-    for k, _ in pairs(HOSTED) do
-        Tracker:FindObjectForCode(k).Active = false
     end
 end
 
