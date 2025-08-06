@@ -72,7 +72,7 @@ def write_location_mapping_script(locations: list[dict[str, any]], location_name
     id_to_location_string: str = "ID_TO_LOCATION_MAP = {\n"
     estimated_location_id: int = 1
     for location in locations:
-        section_identifier: str = f"{location['category'][0]}/{location['region']}/{location['name']}/{location['name']}"
+        section_identifier: str = f"{location['category'][0]}/{location['region']}/{location['name']}"
         if location_name_to_id is None:
             id_to_location_string += f"    [{estimated_location_id}] = {{\"@{section_identifier}\"}},\n"
             location_to_id_string += f"    [\"{section_identifier}\"] = {estimated_location_id},\n"

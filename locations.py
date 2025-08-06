@@ -80,41 +80,39 @@ def build_locations_json(locations: list[dict[str, any]],
     for region, region_locations in grouped_by_region.items():
         if not region_locations:
             continue
-        children: list[dict[str, any]] = []
+        sections: list[dict[str, any]] = []
         for location in region_locations:
             section_info: dict[str, any] = {
                 "name": location["name"],
                 "item_count": 1
             }
-            map_location: dict[str, any] = {
-                "map": "main_map",
-                "x": (total_square_count % LOCATION_ROW_SIZE) * LOCATION_SPACING,
-                "y": (total_square_count // LOCATION_ROW_SIZE) * LOCATION_SPACING
-            }
-            child_info: dict[str, any] = {
-                "name": location["name"],
-                "sections": [section_info],
-                "map_locations": [map_location]
-            }
-            total_square_count += 1
             if "requires" in location and location["requires"]:
                 location_logic: Logic = parse_logic(location["requires"])
                 location_logic = convert_to_dnf(location_logic)
                 location_logic = reduce_logic(location_logic, item_groups)
-                child_info["access_rules"] = convert_dnf_logic_to_json_object(location_logic)
+                section_info["access_rules"] = convert_dnf_logic_to_json_object(location_logic)
             if "category" in location:
                 visibility_rules: list[str] = []
                 for category, rule in visibility_options.items():
                     if category in location["category"]:
                         visibility_rules.append(rule)
-                child_info["visibility_rules"] = visibility_rules
-            children.append(child_info)
+                if visibility_rules:
+                    section_info["visibility_rules"] = visibility_rules
+            sections.append(section_info)
+
+        map_location: dict[str, any] = {
+            "map": "main_map",
+            "x": (total_square_count % LOCATION_ROW_SIZE) * LOCATION_SPACING,
+            "y": (total_square_count // LOCATION_ROW_SIZE) * LOCATION_SPACING
+        }
+        total_square_count += 1
         region_paths: list[list[str]] = get_all_paths(region_graph, "__start__", region, [])
         region_logic: Logic = get_logic_from_paths(region_paths, regions)
         region_entry: dict[str, any] = {
             "name": region,
             "access_rules": convert_dnf_logic_to_json_object(reduce_logic(region_logic, item_groups)),
-            "children": children
+            "sections": sections,
+            "map_locations": [map_location]
         }
         output.append(region_entry)
     top_level_json: dict[str, any] = {"name": parent_group, "children": output}
