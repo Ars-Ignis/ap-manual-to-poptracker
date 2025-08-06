@@ -36,6 +36,8 @@ need pip, which can be installed by running `python -m ensurepip --upgrade` from
 installing pip, run `pip install requests` to install the requests module.
 - `--author`: The name by which you wish to be credited in the PopTracker pack's manifest. Can be manually added after
 the fact.
+- `--keep_images`: Use this flag to not overwrite any images that already exist in the output directory. Useful if you 
+need to re-import your pack to add new locations or items.
 
 ## What are the tool's limitations?
 As previously mentioned, this tool only produces placeholder images and arbitrary location coordinates. Additionally, it

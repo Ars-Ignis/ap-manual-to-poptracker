@@ -9,9 +9,14 @@ from options import *
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Manual APWorld to PopTracker Pack converter.")
     parser.add_argument("apworld_path", help="The full path to the Manual APWorld you want to convert.")
-    parser.add_argument("--output_path", help="The output directory to build the PopTracker pack in. If not provided, will default to a folder named poptracker in the directory containing the APWorld.")
-    parser.add_argument("--datapackage_URL", help="URL for finding location and item IDs; will be estimated if not provided")
+    parser.add_argument("--output_path", help="The output directory to build the PopTracker pack in. If not provided, "
+                                              "will default to a folder named poptracker in the directory containing the"
+                                              " APWorld.")
+    parser.add_argument("--datapackage_URL", help="URL for finding location and item IDs; will be estimated if not "
+                                                  "provided")
     parser.add_argument("--author", help="The name to use as the author of the PopTracker pack")
+    parser.add_argument("--keep_images", help="Keep the images in the current pack instead of replacing them.",
+                        action="store_true")
     args = parser.parse_args()
     if not os.path.isabs(args.apworld_path):
         print(f"Path is not an absolute path! {args.apworld_path}")
@@ -94,7 +99,7 @@ if __name__ == "__main__":
     write_common_lua_scripts(item_groups, args.output_path)
     write_item_mapping_script(items, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, location_name_to_id, args.output_path)
-    copy_default_files(items, options, args.output_path)
+    copy_default_files(items, options, args.keep_images, args.output_path)
 
     tracker_json_object: dict[str, any] = {"display_name": "Map Tracker", "flags": ["ap", "apmanual"]}
     variants_json_object: dict[str, any] = {"tracker": tracker_json_object}
