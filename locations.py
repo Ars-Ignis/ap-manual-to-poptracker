@@ -81,6 +81,8 @@ def build_locations_json(locations: list[dict[str, any]],
         if not region_locations:
             continue
         sections: list[dict[str, any]] = []
+        x: int = -1
+        y: int = -1
         for location in region_locations:
             section_info: dict[str, any] = {
                 "name": location["name"],
@@ -98,12 +100,16 @@ def build_locations_json(locations: list[dict[str, any]],
                         visibility_rules.append(rule)
                 if visibility_rules:
                     section_info["visibility_rules"] = visibility_rules
+            if "x" in location:
+                x = int(location["x"])
+            if "y" in location:
+                y = int(location["y"])
             sections.append(section_info)
 
         map_location: dict[str, any] = {
             "map": "main_map",
-            "x": (total_square_count % LOCATION_ROW_SIZE) * LOCATION_SPACING,
-            "y": (total_square_count // LOCATION_ROW_SIZE) * LOCATION_SPACING
+            "x": x if x >= 0 else (total_square_count % LOCATION_ROW_SIZE) * LOCATION_SPACING,
+            "y": y if y >= 0 else (total_square_count // LOCATION_ROW_SIZE) * LOCATION_SPACING
         }
         total_square_count += 1
         region_paths: list[list[str]] = get_all_paths(region_graph, "__start__", region, [])

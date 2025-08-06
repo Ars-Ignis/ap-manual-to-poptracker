@@ -39,6 +39,22 @@ the fact.
 - `--keep_images`: Use this flag to not overwrite any images that already exist in the output directory. Useful if you 
 need to re-import your pack to add new locations or items.
 
+It's also possible to pre-position the PopTracker squares on your map by providing X and Y coordinates in your 
+`locations.json`. For example:
+```json
+	{
+		"name": "Scenario 1 - Complete",
+		"region": "Scenario 1",
+		"category": ["Main Story Scenarios"],
+		"requires": [],
+		"x": 255,
+		"y": 174
+	}
+```
+This location (and any other locations in the same region and category) will get automatically placed in a square 255
+pixels to the right and 174 pixels down from the top-left corner of the map image. If the coordinates are not provided, 
+locations will just be placed in an evenly spaced grid.
+
 ## What are the tool's limitations?
 As previously mentioned, this tool only produces placeholder images and arbitrary location coordinates. Additionally, it
 only works with the raw json data in the APWorld; if your Manual APWorld makes extensive use of hooks, especially to 
