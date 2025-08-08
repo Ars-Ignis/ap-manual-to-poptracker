@@ -1,27 +1,44 @@
 {
-  "tracker_map": {
-    "type": "map",
-    "dropshadow": false,
-    "h_alignment": "center",
-    "v_alignment": "center",
-    "max_height": 1000,
-    "max_width": 1000,
-    "maps": [
-      "main_map"
-    ]
-  },
   "tracker_default": {
-    "type": "array",
-    "content": [
-      {
-        "type": "layout",
-        "key": "tracker_map"
-      },
-      {
-        "type": "layout",
-        "key": "tracker_items"
-      }
-    ],
-    "orientation": "vertical"
+    "type": "container",
+    "content": {
+      "type": "dock",
+      "content": [
+        {
+          "type": "dock",
+          "dock": "bottom",
+          "content": [
+            {
+              "type": "dock",
+              "dock": "left",
+              "v_alignment": "stretch",
+              "content": [
+                {
+                  "type": "group",
+                  "header": "Items",
+                  "dock": "left",
+                  "content": {
+                    "type": "layout",
+                    "key": "tracker_items"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "v_alignment": "stretch",
+          "margin": "0, 0",
+          "content": [
+            {
+              "type": "layout",
+              "dock": "top",
+              "key": "tracker_map"
+            }
+          ]
+        }
+      ]
+    }
   }
 }

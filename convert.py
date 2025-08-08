@@ -63,11 +63,18 @@ if __name__ == "__main__":
 
     total_square_count: int = 0
     locations_file_paths: list[str] = []
+    map_names: set[str] = set()
     for group, locations_in_group in grouped_locations.items():
-        total_square_count, poptracker_locations = build_locations_json(locations_in_group, regions, region_graph, item_groups, visibility_options, total_square_count, group)
+        total_square_count, new_map_names, poptracker_locations = build_locations_json(locations_in_group, regions, region_graph, item_groups, visibility_options, total_square_count, group)
         locations_file_path: str = f"locations/{to_snake_case(group)}.json"
         locations_file_paths.append(locations_file_path)
         write_json_file(poptracker_locations, args.output_path, locations_file_path)
+        map_names.update(new_map_names)
+    poptracker_maps: list[dict[str, any]] = build_maps_json(map_names)
+    write_json_file(poptracker_maps, args.output_path, "maps/maps.json")
+    poptracker_map_layouts: dict[str, any] = build_map_tabs_layout(map_names)
+    write_json_file(poptracker_map_layouts, args.output_path, "layouts/map_layouts.json")
+
     write_lua_init_file(locations_file_paths, args.output_path)
 
     game_name: str = f"Manual_{game['game']}_{game['creator']}"
@@ -97,7 +104,7 @@ if __name__ == "__main__":
     write_common_lua_scripts(item_groups, args.output_path)
     write_item_mapping_script(items, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, location_name_to_id, args.output_path)
-    copy_default_files(items, options, args.output_path)
+    copy_default_files(items, options, map_names, args.output_path)
 
     tracker_json_object: dict[str, any] = {"display_name": "Map Tracker", "flags": ["ap", "apmanual"]}
     variants_json_object: dict[str, any] = {"tracker": tracker_json_object}

@@ -30,6 +30,7 @@ def write_lua_init_file(location_file_paths: list[str], pack_root: str):
         "ScriptHost:LoadScript(\"scripts/archipelago/archipelago.lua\")\n"
         "Tracker:AddLayouts(\"layouts/options_layout.json\")\n"
         "Tracker:AddLayouts(\"layouts/input_layout.json\")\n"
+        "Tracker:AddLayouts(\"layouts/map_layouts.json\")\n"
         "Tracker:AddLayouts(\"layouts/main.json\")\n"
     )
     for location_file_path in location_file_paths:
@@ -86,7 +87,7 @@ def write_location_mapping_script(locations: list[dict[str, any]], location_name
         file.write(location_to_id_string + id_to_location_string)
 
 
-def copy_default_files(items: list[dict[str, any]], options: list[str], pack_root: str):
+def copy_default_files(items: list[dict[str, any]], options: list[str], map_names: set[str], pack_root: str):
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     item_images_dirpath: str = os.path.join(pack_root, "images/items/")
@@ -112,19 +113,16 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], pack_roo
     if not os.path.exists(os.path.dirname(ap_lua_filepath)):
         os.makedirs(os.path.dirname(ap_lua_filepath))
     shutil.copyfile("./data/archipelago.lua", ap_lua_filepath)
-    maps_json_filepath = os.path.join(pack_root, "maps/maps.json")
-    if not os.path.exists(os.path.dirname(maps_json_filepath)):
-        os.makedirs(os.path.dirname(maps_json_filepath))
-    shutil.copyfile("./data/maps.json", maps_json_filepath)
     main_layout_json_filepath = os.path.join(pack_root, "layouts/main.json")
     if not os.path.exists(os.path.dirname(main_layout_json_filepath)):
         os.makedirs(os.path.dirname(main_layout_json_filepath))
     shutil.copyfile("./data/main.json", main_layout_json_filepath)
-    placeholder_map_image_filepath = os.path.join(pack_root, "images/maps/main.png")
-    if not os.path.exists(os.path.dirname(placeholder_map_image_filepath)):
-        os.makedirs(os.path.dirname(placeholder_map_image_filepath))
-    if not os.path.exists(placeholder_map_image_filepath):
-        shutil.copyfile("./data/placeholder_map.png", placeholder_map_image_filepath)
+    for map_name in sorted(list(map_names)):
+        placeholder_map_image_filepath = os.path.join(pack_root, f"images/maps/{map_name}.png")
+        if not os.path.exists(os.path.dirname(placeholder_map_image_filepath)):
+            os.makedirs(os.path.dirname(placeholder_map_image_filepath))
+        if not os.path.exists(placeholder_map_image_filepath):
+            shutil.copyfile("./data/placeholder_map.png", placeholder_map_image_filepath)
 
 
 def write_common_lua_scripts(item_groups: dict[str, list[str]], pack_root: str):

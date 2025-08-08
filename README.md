@@ -37,7 +37,12 @@ installing pip, run `pip install requests` to install the requests module.
 - `--author`: The name by which you wish to be credited in the PopTracker pack's manifest. Can be manually added after
 the fact.
 
-It's also possible to pre-position the PopTracker squares on your map by providing X and Y coordinates in your 
+
+## Additional Keys
+By adding some additional optional keys to your Manual APWorld's JSON, this tool can provide a more customized 
+experience for your specific use case. The following additional keys are available: 
+### Location Position
+It's possible to pre-position the PopTracker squares on your map by providing X and Y coordinates in your 
 `locations.json`. For example:
 ```json
 	{
@@ -52,6 +57,19 @@ It's also possible to pre-position the PopTracker squares on your map by providi
 This location (and any other locations in the same region and category) will get automatically placed in a square 255
 pixels to the right and 174 pixels down from the top-left corner of the map image. If the coordinates are not provided, 
 locations will just be placed in an evenly spaced grid.
+
+### Additional Maps
+All locations are added to a map named `main_map` by default. To either rename the map in advance, or produce multiple 
+map tabs, you can add the `map` key to any region to move all of that region's locations to that map. This will also 
+produce additional tabs, one for each map. For example:
+```json
+	"Scenario 8": 	{
+		"connects_to": ["Scenario 7","Scenario 13","Scenario 14"],
+		"requires": "|City Adventuring Permit|",
+		"map": "gloomhaven"
+	},
+```
+This will place all of the locations in the region named `Scenario 8` into the map named `gloomhaven`.
 
 ## What are the tool's limitations?
 As previously mentioned, this tool only produces placeholder images and arbitrary location coordinates. Additionally, it

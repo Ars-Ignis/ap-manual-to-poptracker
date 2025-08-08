@@ -74,9 +74,10 @@ def build_locations_json(locations: list[dict[str, any]],
                          item_groups: dict[str, list[str]],
                          visibility_options: dict[str, str],
                          total_square_count: int,
-                         parent_group: str) -> tuple[int, list[dict[str, any]]]:
+                         parent_group: str) -> tuple[int, set[str], list[dict[str, any]]]:
     grouped_by_region: dict[str, list[dict[str, any]]] = group_locations_by_key("region", locations)
     output: list[dict[str, any]] = []
+    new_map_names: set[str] = set()
     for region, region_locations in grouped_by_region.items():
         if not region_locations:
             continue
@@ -105,9 +106,13 @@ def build_locations_json(locations: list[dict[str, any]],
             if "y" in location:
                 y = int(location["y"])
             sections.append(section_info)
-
+        region_data: dict[str, any] = regions[region]
+        map_name: str = "main_map"
+        if "map" in region_data:
+            map_name = region_data["map"]
+        new_map_names.add(map_name)
         map_location: dict[str, any] = {
-            "map": "main_map",
+            "map": map_name,
             "x": x if x >= 0 else (total_square_count % LOCATION_ROW_SIZE) * LOCATION_SPACING,
             "y": y if y >= 0 else (total_square_count // LOCATION_ROW_SIZE) * LOCATION_SPACING
         }
@@ -122,4 +127,38 @@ def build_locations_json(locations: list[dict[str, any]],
         }
         output.append(region_entry)
     top_level_json: dict[str, any] = {"name": parent_group, "children": output}
-    return total_square_count, [top_level_json]
+    return total_square_count, new_map_names, [top_level_json]
+
+
+def build_maps_json(map_names: set[str]) -> list[dict[str, any]]:
+    output: list[dict[str, any]] = []
+    for map_name in sorted(list(map_names)):
+        map_dict: dict[str, any] = {
+            "name": map_name,
+            "img": f"images/maps/{map_name}.png",
+            "location_size": 10,
+            "location_border_thickness": 1
+        }
+        output.append(map_dict)
+    return output
+
+
+def build_map_tabs_layout(map_names: set[str]) -> dict[str, any]:
+    output: dict[str, any] = {}
+    tabs: list[dict[str, any]] = []
+    for map_name in sorted(list(map_names)):
+        map_layout_dict: dict[str, any] = {
+            "type": "map",
+            "maps": [map_name]
+        }
+        tab: dict[str, any] = {
+            "title": map_name,
+            "content": map_layout_dict
+        }
+        tabs.append(tab)
+    tracker_map_layout: dict[str, any] = {
+        "type": "tabbed",
+        "tabs": tabs
+    }
+    output["tracker_map"] = tracker_map_layout
+    return output
