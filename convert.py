@@ -65,7 +65,9 @@ if __name__ == "__main__":
     locations_file_paths: list[str] = []
     map_names: set[str] = set()
     for group, locations_in_group in grouped_locations.items():
-        total_square_count, new_map_names, poptracker_locations = build_locations_json(locations_in_group, regions, region_graph, item_groups, visibility_options, total_square_count, group)
+        total_square_count, new_map_names, poptracker_locations = \
+            build_locations_json(locations_in_group, regions, region_graph, item_groups, visibility_options,
+                                 total_square_count, group)
         locations_file_path: str = f"locations/{to_snake_case(group)}.json"
         locations_file_paths.append(locations_file_path)
         write_json_file(poptracker_locations, args.output_path, locations_file_path)

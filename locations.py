@@ -58,7 +58,10 @@ def group_locations_by_key(key: str, locations: list[dict[str, any]]) -> dict[st
         if key not in location:
             raise SyntaxError(f"Missing grouping key {key} in location {location}")
         if isinstance(location[key], list):
-            group = location[key][0]
+            if location[key]:
+                group = location[key][0]
+            else:
+                group = "default"
         else:
             group = location[key]
         if group in grouped_locations:
