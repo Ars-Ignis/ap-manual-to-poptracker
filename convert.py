@@ -40,6 +40,10 @@ if __name__ == "__main__":
         categories = json.loads(categories_json)
         game = json.loads(game_json)
 
+    for location in locations:
+        if "region" not in location:
+            location["region"] = "__start__"
+
     poptracker_items: list[dict[str, any]] = parse_items(items)
     item_groups: dict[str, list[str]] = get_item_groups(items)
     input_layout: list[dict[str, any]] = build_item_layout(item_groups, 10)
@@ -47,6 +51,7 @@ if __name__ == "__main__":
     write_json_file(input_layout, args.output_path, "layouts/input_layout.json")
 
     region_graph: dict[str, list[str]] = build_region_graph(regions)
+    regions["__start__"] = {}
     grouped_locations: dict[str, list[dict[str, any]]] = group_locations_by_key("category", locations)
 
     visibility_options: dict[str, str] = {}
