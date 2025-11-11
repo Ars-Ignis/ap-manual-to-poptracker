@@ -124,7 +124,10 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], map_name
     if not os.path.exists(os.path.dirname(ap_lua_filepath)):
         os.makedirs(os.path.dirname(ap_lua_filepath))
     shutil.copyfile("./data/archipelago.lua", ap_lua_filepath)
-    shutil.copyfile("./data/util.lua", ap_lua_filepath)
+    util_lua_filepath = os.path.join(pack_root, "scripts/util.lua")
+    if not os.path.exists(os.path.dirname(util_lua_filepath)):
+        os.makedirs(os.path.dirname(util_lua_filepath))
+    shutil.copyfile("./data/util.lua", util_lua_filepath)
     main_layout_json_filepath = os.path.join(pack_root, "layouts/main.json")
     if not os.path.exists(os.path.dirname(main_layout_json_filepath)):
         os.makedirs(os.path.dirname(main_layout_json_filepath))
