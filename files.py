@@ -26,7 +26,8 @@ def write_lua_init_file(location_file_paths: list[str], pack_root: str):
         "Tracker:AddItems(\"items/items.json\")\n"
         "Tracker:AddItems(\"items/options.json\")\n"
         "Tracker:AddMaps(\"maps/maps.json\")\n"
-        "ScriptHost:LoadScript(\"scripts/logic_common.lua\")\n"
+        "ScriptHost:LoadScript(\"scripts/item_groups.lua\")\n"
+        "ScriptHost:LoadScript(\"scripts/util.lua\")\n"
         "ScriptHost:LoadScript(\"scripts/archipelago/archipelago.lua\")\n"
         "Tracker:AddLayouts(\"layouts/options_layout.json\")\n"
         "Tracker:AddLayouts(\"layouts/input_layout.json\")\n"
@@ -123,6 +124,7 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], map_name
     if not os.path.exists(os.path.dirname(ap_lua_filepath)):
         os.makedirs(os.path.dirname(ap_lua_filepath))
     shutil.copyfile("./data/archipelago.lua", ap_lua_filepath)
+    shutil.copyfile("./data/util.lua", ap_lua_filepath)
     main_layout_json_filepath = os.path.join(pack_root, "layouts/main.json")
     if not os.path.exists(os.path.dirname(main_layout_json_filepath)):
         os.makedirs(os.path.dirname(main_layout_json_filepath))
@@ -135,10 +137,10 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], map_name
             shutil.copyfile("./data/placeholder_map.png", placeholder_map_image_filepath)
 
 
-def write_common_lua_scripts(item_groups: dict[str, list[str]], pack_root: str):
+def write_item_group_lua_scripts(item_groups: dict[str, list[str]], pack_root: str):
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
-    full_filepath: str = os.path.join(pack_root, "scripts/logic_common.lua")
+    full_filepath: str = os.path.join(pack_root, "scripts/item_groups.lua")
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
     file_contents: str = "ITEM_GROUPS = {\n"
@@ -157,24 +159,7 @@ def write_common_lua_scripts(item_groups: dict[str, list[str]], pack_root: str):
                 file_contents += ", "
             file_contents += f"\"{to_snake_case(item)}\""
         file_contents += "}"
-    file_contents += "\n}\n\n"
-    has_count_from_group_function: str = """
-function has_count_from_group(group_name, count)
-    local group_members = ITEM_GROUPS[group_name]
-    if group_members == nil then
-        return false
-    end
-    local found_count = 0
-    for _, item in pairs(group_members) do
-        found_count = found_count + Tracker:ProviderCountForCode(item)
-        if found_count >= tonumber(count) then
-            return true
-        end
-    end
-    return false
-end
-    """
-    file_contents += has_count_from_group_function
+    file_contents += "\n}\n"
     with open(full_filepath, 'w') as file:
         file.write(file_contents)
 

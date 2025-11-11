@@ -61,7 +61,7 @@ if __name__ == "__main__":
             visibility_options[category] = []
             for option_name in category_data["yaml_option"]:
                 visibility_options[category].append(option_name)
-                poptracker_options.add(option_name)
+                poptracker_options.add(option_name.lstrip("!"))
 
     poptracker_option_items: list[dict[str, any]] = build_option_items(poptracker_options)
     write_json_file(poptracker_option_items, args.output_path, "items/options.json")
@@ -110,7 +110,7 @@ if __name__ == "__main__":
                   "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
                   "try again if you need IDs from the datapackage.")
     starting_index: int =  game["starting_index"] if "starting_index" in game else 0
-    write_common_lua_scripts(item_groups, args.output_path)
+    write_item_group_lua_scripts(item_groups, args.output_path)
     write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, starting_index, location_name_to_id, args.output_path)
     copy_default_files(items, poptracker_options, map_names, args.output_path)

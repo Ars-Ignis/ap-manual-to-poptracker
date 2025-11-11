@@ -102,13 +102,18 @@ def build_locations_json(locations: list[dict[str, any]],
                 location_logic = reduce_logic(location_logic, item_groups)
                 section_info["access_rules"] = convert_dnf_logic_to_json_object(location_logic)
             if "category" in location and location["category"]:
-                visibility_rules: list[str] = []
+                visibility_rule: str = ""
                 for category in location["category"]:
                     if category in visibility_options:
                         for rule in visibility_options[category]:
-                            visibility_rules.append(rule)
-                if visibility_rules:
-                    section_info["visibility_rules"] = visibility_rules
+                            if visibility_rule:
+                                visibility_rule += ", "
+                            if rule.startswith("!"):
+                                visibility_rule += f"$negate|{rule.lstrip('!')}"
+                            else:
+                                visibility_rule += rule
+                if visibility_rule:
+                    section_info["visibility_rules"] = [visibility_rule]
             if "x" in location:
                 x = int(location["x"])
             if "y" in location:
