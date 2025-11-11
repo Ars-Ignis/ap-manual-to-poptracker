@@ -71,20 +71,22 @@ if __name__ == "__main__":
     total_square_count: int = 0
     locations_file_paths: list[str] = []
     map_names: set[str] = set()
+    functions: dict[str, bool] = {}
     for group, locations_in_group in grouped_locations.items():
-        total_square_count, new_map_names, poptracker_locations = \
+        total_square_count, new_map_names, poptracker_locations, new_functions = \
             build_locations_json(locations_in_group, regions, region_graph, item_groups, visibility_options,
                                  total_square_count, group)
         locations_file_path: str = f"locations/{to_snake_case(group)}.json"
         locations_file_paths.append(locations_file_path)
         write_json_file(poptracker_locations, args.output_path, locations_file_path)
-        map_names.update(new_map_names)
+        map_names |= new_map_names
+        functions |= new_functions
     poptracker_maps: list[dict[str, any]] = build_maps_json(map_names)
     write_json_file(poptracker_maps, args.output_path, "maps/maps.json")
     poptracker_map_layouts: dict[str, any] = build_map_tabs_layout(map_names)
     write_json_file(poptracker_map_layouts, args.output_path, "layouts/map_layouts.json")
 
-    write_lua_init_file(locations_file_paths, args.output_path)
+    write_lua_init_file(locations_file_paths, len(functions) > 0, args.output_path)
 
     game_name: str = f"Manual_{game['game']}_{game['creator']}"
 
@@ -109,8 +111,8 @@ if __name__ == "__main__":
             print("Warning! You are trying to use a datapackage URL without the requests module installed. " 
                   "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
                   "try again if you need IDs from the datapackage.")
-    starting_index: int =  game["starting_index"] if "starting_index" in game else 0
-    write_item_group_lua_scripts(item_groups, args.output_path)
+    starting_index: int = game["starting_index"] if "starting_index" in game else 0
+    write_item_group_lua_script(item_groups, args.output_path)
     write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, starting_index, location_name_to_id, args.output_path)
     copy_default_files(items, poptracker_options, map_names, args.output_path)
@@ -128,4 +130,16 @@ if __name__ == "__main__":
         manifest_json_object["author"] = args.author
     write_json_file(manifest_json_object, args.output_path, "manifest.json")
 
-    print(f"All done! Your PopTracker pack is located at {args.output_path}")
+    if functions:
+        print("========================================================")
+        print("| WARNING! You have custom logic hooks in your logic!  |")
+        print("| You will need to fill out the function stubs in      |")
+        print("| scripts/custom_util.lua with your custom logic for   |")
+        print("| your pack to work correctly!                         |")
+        print("|                                                      |")
+        print("| Custom functions found:                              |")
+        for function_name in sorted(functions.keys()):
+            log_line: str = f"| -{function_name}".ljust(54) + " |"
+            print(log_line)
+        print("========================================================")
+    print(f"\nAll done! Your PopTracker pack is located at {args.output_path}")

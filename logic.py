@@ -3,6 +3,16 @@ from enum import Enum
 from utils import *
 
 
+BUILT_IN_FUNCTIONS = [
+    "ItemValue",
+    "OptOne",
+    "OptAll",
+    "YamlEnabled",
+    "YamlDisabled",
+    "YamlCompare",
+]
+
+
 class Operator(Enum):
     AND = 0
     OR = 1
@@ -26,6 +36,14 @@ def convert_tokens_to_logic(tokens: list[str]) -> Logic:
         if token.startswith("|") and token.endswith("|") and token.count("|") == 2:
             # this is a primitive
             return Logic(op=Operator.PRIMITIVE, operands=[], prim_value=token[1:-1])
+        elif token.startswith("{") and token.endswith("}") and token.count("{") == 1:
+            # this is a function, write as a primitive in PopTracker function syntax
+            function_name: str = token[1:token.find("(")]
+            function_params: str = token[token.find("(")+1:token.find(")")]
+            function_string: str = f"${function_name}"
+            if function_params:
+                function_string += f"|{function_params}"
+            return Logic(op=Operator.PRIMITIVE, operands=[], prim_value=function_string)
         else:
             # this is a string that needs to be further broken down
             return parse_logic(token)
@@ -85,6 +103,12 @@ def parse_logic(logic: str) -> Logic:
             end_index = logic.find("|", index+1)
             if end_index == -1:
                 raise SyntaxError(f"Mismatched pipes starting at index {index} for rule {logic}")
+            tokens.append(logic[index:end_index+1])
+            index = end_index + 1
+        elif current_char == '{':
+            end_index = logic.find("}", index+1)
+            if end_index == -1:
+                raise SyntaxError(f"Mismatched braces starting at index {index} for rule {logic}")
             tokens.append(logic[index:end_index+1])
             index = end_index + 1
         elif current_char.isspace():
@@ -266,10 +290,11 @@ def reduce_logic(logic: Logic, item_groups: dict[str, list[str]]) -> Logic:
     return new_or_logic
 
 
-def convert_dnf_logic_to_json_object(logic: Logic) -> list[str]:
+def convert_dnf_logic_to_json_object(logic: Logic) -> tuple[list[str], dict[str, bool]]:
     if not is_dnf(logic):
         raise AssertionError(f"convert_dnf_logic_to_json_object works with logic in DNF form only! {logic}")
     json_object: list[str] = []
+    functions: dict[str, bool] = {}
     for or_operand in logic.operands:
         operand_string: str = ""
         first_operand: bool = True
@@ -283,7 +308,15 @@ def convert_dnf_logic_to_json_object(logic: Logic) -> list[str]:
                 item_group: str = prim_value[1:prim_value.index(":")]
                 count: int = int(prim_value[prim_value.index(":")+1:len(prim_value)])
                 operand_string += f"$has_count_from_group|{item_group}|{count}"
+            elif prim_value.startswith("$"):
+                function_name: str = prim_value[1:]
+                pipe_index: int = prim_value.find("|")
+                if pipe_index >= 0:
+                    function_name: str = prim_value[1:pipe_index]
+                if function_name not in BUILT_IN_FUNCTIONS and function_name not in functions:
+                    functions[function_name] = pipe_index >= 0
+                operand_string += prim_value
             else:
                 operand_string += to_snake_case(prim_value)
         json_object.append(operand_string)
-    return json_object
+    return json_object, functions

@@ -81,10 +81,11 @@ def build_locations_json(locations: list[dict[str, any]],
                          item_groups: dict[str, list[str]],
                          visibility_options: dict[str, str],
                          total_square_count: int,
-                         parent_group: str) -> tuple[int, set[str], list[dict[str, any]]]:
+                         parent_group: str) -> tuple[int, set[str], list[dict[str, any]], dict[str, bool]]:
     grouped_by_region: dict[str, list[dict[str, any]]] = group_locations_by_key("region", locations)
     output: list[dict[str, any]] = []
-    new_map_names: set[str] = set()
+    map_names: set[str] = set()
+    functions: dict[str, bool] = {}
     for region, region_locations in grouped_by_region.items():
         if not region_locations:
             continue
@@ -100,7 +101,8 @@ def build_locations_json(locations: list[dict[str, any]],
                 location_logic: Logic = parse_logic(location["requires"])
                 location_logic = convert_to_dnf(location_logic)
                 location_logic = reduce_logic(location_logic, item_groups)
-                section_info["access_rules"] = convert_dnf_logic_to_json_object(location_logic)
+                section_info["access_rules"], new_functions = convert_dnf_logic_to_json_object(location_logic)
+                functions |= new_functions
             if "category" in location and location["category"]:
                 visibility_rule: str = ""
                 for category in location["category"]:
@@ -123,7 +125,7 @@ def build_locations_json(locations: list[dict[str, any]],
         map_name: str = "main_map"
         if "map" in region_data:
             map_name = region_data["map"]
-        new_map_names.add(map_name)
+        map_names.add(map_name)
         map_location: dict[str, any] = {
             "map": map_name,
             "x": x if x >= 0 else (total_square_count % LOCATION_ROW_SIZE) * LOCATION_SPACING,
@@ -132,15 +134,17 @@ def build_locations_json(locations: list[dict[str, any]],
         total_square_count += 1
         region_paths: list[list[str]] = get_all_paths(region_graph, "__start__", region, [])
         region_logic: Logic = get_logic_from_paths(region_paths, regions)
+        region_logic_string, new_functions = convert_dnf_logic_to_json_object(reduce_logic(region_logic, item_groups))
+        functions |= new_functions
         region_entry: dict[str, any] = {
             "name": region,
-            "access_rules": convert_dnf_logic_to_json_object(reduce_logic(region_logic, item_groups)),
+            "access_rules": region_logic_string,
             "sections": sections,
             "map_locations": [map_location]
         }
         output.append(region_entry)
     top_level_json: dict[str, any] = {"name": parent_group, "children": output}
-    return total_square_count, new_map_names, [top_level_json]
+    return total_square_count, map_names, [top_level_json], functions
 
 
 def build_maps_json(map_names: set[str]) -> list[dict[str, any]]:

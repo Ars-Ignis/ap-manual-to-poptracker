@@ -5,7 +5,7 @@ import json
 from utils import *
 
 
-def write_json_file(json_object: any, pack_root: str, file_location: str):
+def write_json_file(json_object: any, pack_root: str, file_location: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, file_location)
@@ -16,7 +16,7 @@ def write_json_file(json_object: any, pack_root: str, file_location: str):
         file.write(json_dump)
 
 
-def write_lua_init_file(location_file_paths: list[str], pack_root: str):
+def write_lua_init_file(location_file_paths: list[str], has_custom_lua: bool, pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/init.lua")
@@ -34,16 +34,38 @@ def write_lua_init_file(location_file_paths: list[str], pack_root: str):
         "Tracker:AddLayouts(\"layouts/map_layouts.json\")\n"
         "Tracker:AddLayouts(\"layouts/main.json\")\n"
     )
+    file_contents += "ScriptHost:LoadScript(\"scripts/custom_util.lua\")\n" if has_custom_lua else ""
     for location_file_path in location_file_paths:
         file_contents += f"Tracker:AddLocations(\"{location_file_path}\")\n"
     with open(full_filepath, 'w') as file:
         file.write(file_contents)
 
 
+def write_custom_util_lua_file(functions: dict[str, bool], pack_root: str) -> None:
+    if not os.path.isabs(pack_root):
+        raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
+    full_filepath: str = os.path.join(pack_root, "scripts/archipelago/custom_util.lua")
+    if not os.path.exists(os.path.dirname(full_filepath)):
+        os.makedirs(os.path.dirname(full_filepath))
+    file_content: str = "-- Implement custom logic functions here\n\n"
+    for function_name, has_params in sorted(functions.items()):
+        file_content += f"-- Custom logic: {function_name}\n"
+        if has_params:
+            file_content += f"function {function_name}(params)"
+        else:
+            file_content += f"function {function_name}()"
+        file_content += "\t-- Implement your logic here. params is a single string consisting of everything in" \
+                        " the parentheses."
+        file_content += "\treturn true\n"
+        file_content += "end\n\n"
+    with open(full_filepath, 'w') as file:
+        file.write(file_content)
+
+
 def write_item_mapping_script(items: list[dict[str, any]],
                               starting_index: int,
                               item_name_to_id: dict[str, int],
-                              pack_root: str):
+                              pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/archipelago/item_mapping.lua")
@@ -72,7 +94,7 @@ def write_item_mapping_script(items: list[dict[str, any]],
 def write_location_mapping_script(locations: list[dict[str, any]],
                                   starting_index: int,
                                   location_name_to_id: dict[str, int],
-                                  pack_root: str):
+                                  pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/archipelago/location_mapping.lua")
@@ -98,7 +120,7 @@ def write_location_mapping_script(locations: list[dict[str, any]],
         file.write(location_to_id_string + id_to_location_string)
 
 
-def copy_default_files(items: list[dict[str, any]], options: list[str], map_names: set[str], pack_root: str):
+def copy_default_files(items: list[dict[str, any]], options: list[str], map_names: set[str], pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     item_images_dirpath: str = os.path.join(pack_root, "images/items/")
@@ -140,7 +162,7 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], map_name
             shutil.copyfile("./data/placeholder_map.png", placeholder_map_image_filepath)
 
 
-def write_item_group_lua_scripts(item_groups: dict[str, list[str]], pack_root: str):
+def write_item_group_lua_script(item_groups: dict[str, list[str]], pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/item_groups.lua")
