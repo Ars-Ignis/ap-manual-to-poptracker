@@ -6,9 +6,9 @@ OPTION_ITEM_HEIGHT = 40
 OPTION_ITEM_MARGIN = 10
 
 
-def build_option_items(options: list[str]) -> list[dict[str, any]]:
+def build_option_items(options: set[str]) -> list[dict[str, any]]:
     output_data: list[dict[str, any]] = []
-    for option in options:
+    for option in sorted(options):
         option_dict: dict[str, any] = {
             "name": option,
             "type": "toggle",
@@ -20,11 +20,12 @@ def build_option_items(options: list[str]) -> list[dict[str, any]]:
     return output_data
 
 
-def build_option_layout(options: list[str]) -> dict[str, any]:
+def build_option_layout(options: set[str]) -> dict[str, any]:
     rows: list[list[str]] = []
-    for i in range((len(options)//OPTION_ROW_SIZE)+1):
+    options_list: list[str] = sorted(options)
+    for i in range((len(options_list)//OPTION_ROW_SIZE)+1):
         row: list[str] = []
-        for option in options[i*OPTION_ROW_SIZE:(i+1)*OPTION_ROW_SIZE]:
+        for option in options_list[i*OPTION_ROW_SIZE:(i+1)*OPTION_ROW_SIZE]:
             row.append(option)
         while len(row) < OPTION_ROW_SIZE:
             row.append("")
@@ -44,7 +45,7 @@ def build_option_layout(options: list[str]) -> dict[str, any]:
         "orientation": "horizontal",
         "v_alignment": "top",
         "min_width": (OPTION_ROW_SIZE * (OPTION_ITEM_WIDTH + OPTION_ITEM_MARGIN)) - OPTION_ITEM_MARGIN,
-        "min_height": (((len(options) // OPTION_ROW_SIZE) + 1) * (OPTION_ITEM_HEIGHT + OPTION_ITEM_MARGIN)) - OPTION_ITEM_MARGIN,
+        "min_height": (((len(options_list) // OPTION_ROW_SIZE) + 1) * (OPTION_ITEM_HEIGHT + OPTION_ITEM_MARGIN)) - OPTION_ITEM_MARGIN,
         "content": content
     }
     return {"settings_popup": settings_popup}

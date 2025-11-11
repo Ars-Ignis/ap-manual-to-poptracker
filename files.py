@@ -39,31 +39,39 @@ def write_lua_init_file(location_file_paths: list[str], pack_root: str):
         file.write(file_contents)
 
 
-def write_item_mapping_script(items: list[dict[str, any]], item_name_to_id: dict[str, int], pack_root: str):
+def write_item_mapping_script(items: list[dict[str, any]],
+                              starting_index: int,
+                              item_name_to_id: dict[str, int],
+                              pack_root: str):
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/archipelago/item_mapping.lua")
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
     file_content: str = "ITEM_MAPPING = {\n"
-    estimated_item_id: int = 1
+    calculated_item_id: int = starting_index
     for item in items:
-        if (("progression" not in item or not item["progression"]) and
-           ("progression_skip_balancing" not in item or not item["progression_skip_balancing"])):
-            estimated_item_id += 1
-            continue
-        type: str = "consumable" if "count" in item and int(item["count"]) > 1 else "toggle"
-        if item_name_to_id is None:
-            file_content += f"    [{estimated_item_id}] = {{\"{to_snake_case(item['name'])}\", \"{type}\"}},\n"
-        else:
-            file_content += f"    [{item_name_to_id[item['name']]}] = {{\"{to_snake_case(item['name'])}\", \"{type}\"}},\n"
-        estimated_item_id += 1
+        if "id" in item and item["id"] > calculated_item_id:
+            calculated_item_id = item["id"]
+        if (("progression" in item and item["progression"]) or
+           ("progression_skip_balancing" in item and item["progression_skip_balancing"])):
+            item_type: str = "consumable" if "count" in item and int(item["count"]) > 1 else "toggle"
+            if item_name_to_id is None:
+                file_content += \
+                    f"    [{calculated_item_id}] = {{\"{to_snake_case(item['name'])}\", \"{item_type}\"}},\n"
+            else:
+                file_content += \
+                    f"    [{item_name_to_id[item['name']]}] = {{\"{to_snake_case(item['name'])}\", \"{item_type}\"}},\n"
+        calculated_item_id += 1
     file_content += "}"
     with open(full_filepath, 'w') as file:
         file.write(file_content)
 
 
-def write_location_mapping_script(locations: list[dict[str, any]], location_name_to_id: dict[str, int], pack_root: str):
+def write_location_mapping_script(locations: list[dict[str, any]],
+                                  starting_index: int,
+                                  location_name_to_id: dict[str, int],
+                                  pack_root: str):
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/archipelago/location_mapping.lua")
@@ -71,16 +79,18 @@ def write_location_mapping_script(locations: list[dict[str, any]], location_name
         os.makedirs(os.path.dirname(full_filepath))
     location_to_id_string: str = "LOCATION_TO_ID_MAP = {\n"
     id_to_location_string: str = "ID_TO_LOCATION_MAP = {\n"
-    estimated_location_id: int = 1
+    calculated_location_id: int = starting_index
     for location in locations:
+        if "id" in location and location["id"] > calculated_location_id:
+            calculated_location_id = location["id"]
         section_identifier: str = f"{location['category'][0]}/{location['region']}/{location['name']}"
         if location_name_to_id is None:
-            id_to_location_string += f"    [{estimated_location_id}] = {{\"@{section_identifier}\"}},\n"
-            location_to_id_string += f"    [\"{section_identifier}\"] = {estimated_location_id},\n"
+            id_to_location_string += f"    [{calculated_location_id}] = {{\"@{section_identifier}\"}},\n"
+            location_to_id_string += f"    [\"{section_identifier}\"] = {calculated_location_id},\n"
         else:
             id_to_location_string += f"    [{location_name_to_id[location['name']]}] = {{\"@{section_identifier}\"}},\n"
             location_to_id_string += f"    [\"{section_identifier}\"] = {location_name_to_id[location['name']]},\n"
-        estimated_location_id += 1
+        calculated_location_id += 1
     location_to_id_string += "}\n"
     id_to_location_string += "}\n"
     with open(full_filepath, 'w') as file:

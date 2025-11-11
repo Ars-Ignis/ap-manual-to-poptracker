@@ -54,16 +54,18 @@ if __name__ == "__main__":
     regions["__start__"] = {}
     grouped_locations: dict[str, list[dict[str, any]]] = group_locations_by_key("category", locations)
 
-    visibility_options: dict[str, str] = {}
-    options: list[str] = []
+    visibility_options: dict[str, list[str]] = {}
+    poptracker_options: set[str] = set()
     for category, category_data in categories.items():
         if "yaml_option" in category_data:
-            visibility_options[category] = category_data["yaml_option"][0]
-            options.append(category_data["yaml_option"][0])
+            visibility_options[category] = []
+            for option_name in category_data["yaml_option"]:
+                visibility_options[category].append(option_name)
+                poptracker_options.add(option_name)
 
-    poptracker_option_items: list[dict[str, any]] = build_option_items(options)
+    poptracker_option_items: list[dict[str, any]] = build_option_items(poptracker_options)
     write_json_file(poptracker_option_items, args.output_path, "items/options.json")
-    poptracker_option_layout: dict[str, any] = build_option_layout(options)
+    poptracker_option_layout: dict[str, any] = build_option_layout(poptracker_options)
     write_json_file(poptracker_option_layout, args.output_path, "layouts/options_layout.json")
 
     total_square_count: int = 0
@@ -107,11 +109,11 @@ if __name__ == "__main__":
             print("Warning! You are trying to use a datapackage URL without the requests module installed. " 
                   "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
                   "try again if you need IDs from the datapackage.")
-
+    starting_index: int =  game["starting_index"] if "starting_index" in game else 0
     write_common_lua_scripts(item_groups, args.output_path)
-    write_item_mapping_script(items, item_name_to_id, args.output_path)
-    write_location_mapping_script(locations, location_name_to_id, args.output_path)
-    copy_default_files(items, options, map_names, args.output_path)
+    write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
+    write_location_mapping_script(locations, starting_index, location_name_to_id, args.output_path)
+    copy_default_files(items, poptracker_options, map_names, args.output_path)
 
     tracker_json_object: dict[str, any] = {"display_name": "Map Tracker", "flags": ["ap", "apmanual"]}
     variants_json_object: dict[str, any] = {"tracker": tracker_json_object}

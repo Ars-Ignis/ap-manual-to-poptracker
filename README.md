@@ -28,7 +28,8 @@ That's it!
 There are additionally the following optional parameters:
 - `--output_path`: the directory where you want your PopTracker pack to be created. The directory will be created if it 
 does not already exist. If not provided, it defaults to a folder named `poptracker` adjacent to the APWorld.
-- `--datapackage_URL`: The URL of an Archipelago datapackage that include your Manual APWorld. Most likely found by 
+- `--datapackage_URL`: [**DEPRECATED**: As of 1.4.0, this should no longer be necessary; it's still available just in case 
+you run into issues, however.] The URL of an Archipelago datapackage that include your Manual APWorld. Most likely found by 
 running your own copy of the WebHost from source. If you're not sure how to do that, don't worry about it; it is likely 
 to work without it, and at worst you'll need to manually update the `item_mapping.lua` and `location_mapping.lua` files 
 produced by the tool. Note: use of this feature requires the Python `requests` module. To install it, you will first 
@@ -69,7 +70,7 @@ produce additional tabs, one for each map. For example:
 		"map": "gloomhaven"
 	},
 ```
-This will place all of the locations in the region named `Scenario 8` into the map named `gloomhaven`.
+This will place all the locations in the region named `Scenario 8` into the map named `gloomhaven`.
 
 ## What are the tool's limitations?
 As previously mentioned, this tool only produces placeholder images and arbitrary location coordinates. Additionally, it

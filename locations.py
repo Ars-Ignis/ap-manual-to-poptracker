@@ -6,12 +6,15 @@ LOCATION_SPACING = 25
 
 
 def build_region_graph(regions: dict[str, any]) -> dict[str, list[str]]:
-    region_graph: dict[str, list[str]] = {}
+    region_graph: dict[str, list[str]] = {"__start__": []}
     for region, region_data in regions.items():
-        region_graph[region] = region_data["connects_to"]
+        if "connects_to" in region_data and region_data["connects_to"]:
+            region_graph[region] = region_data["connects_to"]
+        else:
+            region_graph["region"] = []
         if "starting" in region_data and region_data["starting"]:
-            region_graph["__start__"] = [region]
-    if "__start__" not in region_graph:
+            region_graph["__start__"].append(region)
+    if not region_graph["__start__"]:
         region_graph["__start__"] = list(region_graph.keys())
     return region_graph
 
@@ -23,14 +26,15 @@ def get_all_paths(region_graph: dict[str, list[str]],
     if start_region == destination_region:
         return [[start_region]]
     paths: list[list[str]] = []
-    for next_region in region_graph[start_region]:
-        if next_region in current_path:
-            continue
-        updated_path: list[str] = current_path + [next_region]
-        possible_paths: list[list[str]] = get_all_paths(region_graph, next_region, destination_region, updated_path)
-        for path in possible_paths:
-            path.append(start_region)
-            paths.append(path)
+    if start_region in region_graph:
+        for next_region in region_graph[start_region]:
+            if next_region in current_path:
+                continue
+            updated_path: list[str] = current_path + [next_region]
+            possible_paths: list[list[str]] = get_all_paths(region_graph, next_region, destination_region, updated_path)
+            for path in possible_paths:
+                path.append(start_region)
+                paths.append(path)
     return paths
 
 
@@ -97,11 +101,12 @@ def build_locations_json(locations: list[dict[str, any]],
                 location_logic = convert_to_dnf(location_logic)
                 location_logic = reduce_logic(location_logic, item_groups)
                 section_info["access_rules"] = convert_dnf_logic_to_json_object(location_logic)
-            if "category" in location:
+            if "category" in location and location["category"]:
                 visibility_rules: list[str] = []
-                for category, rule in visibility_options.items():
-                    if category in location["category"]:
-                        visibility_rules.append(rule)
+                for category in location["category"]:
+                    if category in visibility_options:
+                        for rule in visibility_options[category]:
+                            visibility_rules.append(rule)
                 if visibility_rules:
                     section_info["visibility_rules"] = visibility_rules
             if "x" in location:

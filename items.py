@@ -24,7 +24,7 @@ def parse_items(items: dict[str, any]) -> list[dict[str, any]]:
            ("progression_skip_balancing" not in item or not item["progression_skip_balancing"])):
             continue
         poptracker_item: dict[str, any] = {}
-        count: int = int(item["count"])
+        count: int = int(item["count"]) if "count" in item else 1
         has_multiple: bool = count > 1
         poptracker_item["name"] = item["name"]
         poptracker_item["type"] = "consumable" if has_multiple else "toggle"
