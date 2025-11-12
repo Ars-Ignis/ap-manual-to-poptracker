@@ -86,6 +86,8 @@ if __name__ == "__main__":
     poptracker_map_layouts: dict[str, any] = build_map_tabs_layout(map_names)
     write_json_file(poptracker_map_layouts, args.output_path, "layouts/map_layouts.json")
 
+    if len(functions) > 0:
+        write_custom_util_lua_file(functions, args.output_path)
     write_lua_init_file(locations_file_paths, len(functions) > 0, args.output_path)
 
     game_name: str = f"Manual_{game['game']}_{game['creator']}"

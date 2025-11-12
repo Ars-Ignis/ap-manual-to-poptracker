@@ -44,18 +44,18 @@ def write_lua_init_file(location_file_paths: list[str], has_custom_lua: bool, pa
 def write_custom_util_lua_file(functions: dict[str, bool], pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
-    full_filepath: str = os.path.join(pack_root, "scripts/archipelago/custom_util.lua")
+    full_filepath: str = os.path.join(pack_root, "scripts/custom_util.lua")
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
     file_content: str = "-- Implement custom logic functions here\n\n"
     for function_name, has_params in sorted(functions.items()):
         file_content += f"-- Custom logic: {function_name}\n"
         if has_params:
-            file_content += f"function {function_name}(params)"
+            file_content += f"function {function_name}(params)\n"
         else:
-            file_content += f"function {function_name}()"
+            file_content += f"function {function_name}()\n"
         file_content += "\t-- Implement your logic here. params is a single string consisting of everything in" \
-                        " the parentheses."
+                        " the parentheses.\n"
         file_content += "\treturn true\n"
         file_content += "end\n\n"
     with open(full_filepath, 'w') as file:
