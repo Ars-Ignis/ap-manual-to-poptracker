@@ -18,3 +18,20 @@ function has_count_from_group(group_name, count)
     end
     return false
 end
+
+-- Below are logic functions that come bundled with Manual.
+function ItemValue(value_category_name, target_value)
+    category_values = ITEM_VALUES[value_category_name]
+    if category_values == nil then
+        return false
+    end
+    local current_value = 0
+    for item_name, item_value in pairs(category_values) do
+        local item_count = Tracker:ProviderCountForCode(item_name)
+        current_value = current_value + (item_count * item_value)
+        if current_value >= target_value then
+            return true
+        end
+    end
+    return false
+end

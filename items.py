@@ -16,9 +16,10 @@ def get_item_groups(items: list[dict[str, any]]) -> dict[str, list[str]]:
     return item_groups
 
 
-def parse_items(items: dict[str, any]) -> list[dict[str, any]]:
+def parse_items(items: dict[str, any]) -> tuple[list[dict[str, any]], dict[str, dict[str, int]]]:
     # Create output object for items
     poptracker_items: list[dict[str, any]] = []
+    item_values: dict[str, dict[str, int]] = {}
     for item in items:
         if (("progression" not in item or not item["progression"]) and
            ("progression_skip_balancing" not in item or not item["progression_skip_balancing"])):
@@ -34,10 +35,15 @@ def parse_items(items: dict[str, any]) -> list[dict[str, any]]:
         if has_multiple:
             poptracker_item["min_quantity"] = 0
             poptracker_item["max_quantity"] = count
-
         poptracker_items.append(poptracker_item)
+        if "value" in item and item["value"]:
+            for value_category, value_amount in item["value"].items():
+                if value_category in item_values:
+                    item_values[value_category][item["name"]] = int(value_amount)
+                else:
+                    item_values[value_category] = {item["name"] : int(value_amount)}
 
-    return poptracker_items
+    return poptracker_items, item_values
 
 
 def build_item_layout(item_groups: dict[str, list[str]], row_size: int) -> list[dict[str, any]]:

@@ -26,7 +26,7 @@ def write_lua_init_file(location_file_paths: list[str], has_custom_lua: bool, pa
         "Tracker:AddItems(\"items/items.json\")\n"
         "Tracker:AddItems(\"items/options.json\")\n"
         "Tracker:AddMaps(\"maps/maps.json\")\n"
-        "ScriptHost:LoadScript(\"scripts/item_groups.lua\")\n"
+        "ScriptHost:LoadScript(\"scripts/item_data.lua\")\n"
         "ScriptHost:LoadScript(\"scripts/util.lua\")\n"
         "ScriptHost:LoadScript(\"scripts/archipelago/archipelago.lua\")\n"
         "Tracker:AddLayouts(\"layouts/options_layout.json\")\n"
@@ -41,21 +41,25 @@ def write_lua_init_file(location_file_paths: list[str], has_custom_lua: bool, pa
         file.write(file_contents)
 
 
-def write_custom_util_lua_file(functions: dict[str, bool], pack_root: str) -> None:
+def write_custom_util_lua_file(functions: dict[str, int], pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/custom_util.lua")
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
     file_content: str = "-- Implement custom logic functions here\n\n"
-    for function_name, has_params in sorted(functions.items()):
+    for function_name, param_count in sorted(functions.items()):
         file_content += f"-- Custom logic: {function_name}\n"
-        if has_params:
-            file_content += f"function {function_name}(params)\n"
-        else:
-            file_content += f"function {function_name}()\n"
-        file_content += "\t-- Implement your logic here. params is a single string consisting of everything in" \
-                        " the parentheses.\n"
+        file_content += f"function {function_name}("
+        first_param: bool = True
+        for i in range(param_count):
+            if first_param:
+                first_param = False
+            else:
+                file_content += ", "
+            file_content += f"param{i+1}"
+        file_content += ")\n"
+        file_content += "\t-- Implement your logic here. Parameters are strings and numbered from left to right.\n"
         file_content += "\treturn true\n"
         file_content += "end\n\n"
     with open(full_filepath, 'w') as file:
@@ -162,10 +166,10 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], map_name
             shutil.copyfile("./data/placeholder_map.png", placeholder_map_image_filepath)
 
 
-def write_item_group_lua_script(item_groups: dict[str, list[str]], pack_root: str) -> None:
+def write_data_lua_script(item_groups: dict[str, list[str]], item_values: dict[str, dict[str, int]], pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
-    full_filepath: str = os.path.join(pack_root, "scripts/item_groups.lua")
+    full_filepath: str = os.path.join(pack_root, "scripts/item_data.lua")
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
     file_contents: str = "ITEM_GROUPS = {\n"
@@ -175,7 +179,7 @@ def write_item_group_lua_script(item_groups: dict[str, list[str]], pack_root: st
             first_group = False
         else:
             file_contents += ",\n"
-        file_contents += f"    [\"{group}\"] = {{"
+        file_contents += f"\t[\"{group}\"] = {{"
         first_item: bool = True
         for item in items:
             if first_item:
@@ -184,7 +188,24 @@ def write_item_group_lua_script(item_groups: dict[str, list[str]], pack_root: st
                 file_contents += ", "
             file_contents += f"\"{to_snake_case(item)}\""
         file_contents += "}"
-    file_contents += "\n}\n"
+    file_contents += "\n}\n\n\nITEM_VALUES = {\n"
+    first_category: bool = True
+    for value_category, values in item_values.items():
+        if first_category:
+            first_category = False
+        else:
+            file_contents += ",\n"
+        file_contents += f"\t[\"{value_category}\"] = {{"
+        first_item_value: bool = True
+        for item_name, item_value in values.items():
+            if first_item_value:
+                first_item_value = False
+            else:
+                file_contents += ", "
+            file_contents += f"[\"{to_snake_case(item_name)}\"] = {item_value}"
+        file_contents += "}"
+    file_contents += "\n}"
+
     with open(full_filepath, 'w') as file:
         file.write(file_contents)
 

@@ -81,11 +81,11 @@ def build_locations_json(locations: list[dict[str, any]],
                          item_groups: dict[str, list[str]],
                          visibility_options: dict[str, str],
                          total_square_count: int,
-                         parent_group: str) -> tuple[int, set[str], list[dict[str, any]], dict[str, bool]]:
+                         parent_group: str) -> tuple[int, set[str], list[dict[str, any]], dict[str, int]]:
     grouped_by_region: dict[str, list[dict[str, any]]] = group_locations_by_key("region", locations)
     output: list[dict[str, any]] = []
     map_names: set[str] = set()
-    functions: dict[str, bool] = {}
+    functions: dict[str, int] = {}
     for region, region_locations in grouped_by_region.items():
         if not region_locations:
             continue

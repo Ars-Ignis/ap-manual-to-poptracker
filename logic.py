@@ -42,7 +42,24 @@ def convert_tokens_to_logic(tokens: list[str]) -> Logic:
             function_params: str = token[token.find("(")+1:token.find(")")]
             function_string: str = f"${function_name}"
             if function_params:
-                function_string += f"|{function_params}"
+                modified_param_string: str = ""
+                if function_name == "ItemValue":
+                    # delimiter is a colon
+                    value_category, _, target_value = function_params.partition(":")
+                    modified_param_string = "|" + value_category.rstrip() + "|" + target_value.lstrip()
+                elif function_name == "YamlCompare":
+                    # delimiter is whitespace
+                    param_list: list[str] = function_params.split()
+                    if len(param_list) != 3:
+                        raise SyntaxError(f"YamlCompare takes exactly three parameters, separated by whitespace! "
+                                          f"Parameters found: {function_params}")
+                    modified_param_string = "|" + "|".join(param_list)
+                else:
+                    # delimiter is a comma
+                    param_list: list[str] = function_params.split(",")
+                    for param in param_list:
+                        modified_param_string += "|" + param.lstrip().rstrip()
+                function_string += modified_param_string
             return Logic(op=Operator.PRIMITIVE, operands=[], prim_value=function_string)
         else:
             # this is a string that needs to be further broken down
@@ -290,11 +307,11 @@ def reduce_logic(logic: Logic, item_groups: dict[str, list[str]]) -> Logic:
     return new_or_logic
 
 
-def convert_dnf_logic_to_json_object(logic: Logic) -> tuple[list[str], dict[str, bool]]:
+def convert_dnf_logic_to_json_object(logic: Logic) -> tuple[list[str], dict[str, int]]:
     if not is_dnf(logic):
         raise AssertionError(f"convert_dnf_logic_to_json_object works with logic in DNF form only! {logic}")
     json_object: list[str] = []
-    functions: dict[str, bool] = {}
+    functions: dict[str, int] = {}
     for or_operand in logic.operands:
         operand_string: str = ""
         first_operand: bool = True
@@ -314,7 +331,7 @@ def convert_dnf_logic_to_json_object(logic: Logic) -> tuple[list[str], dict[str,
                 if pipe_index >= 0:
                     function_name: str = prim_value[1:pipe_index]
                 if function_name not in BUILT_IN_FUNCTIONS and function_name not in functions:
-                    functions[function_name] = pipe_index >= 0
+                    functions[function_name] = prim_value.count("|")
                 operand_string += prim_value
             else:
                 operand_string += to_snake_case(prim_value)

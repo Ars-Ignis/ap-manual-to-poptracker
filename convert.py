@@ -44,7 +44,9 @@ if __name__ == "__main__":
         if "region" not in location:
             location["region"] = "__start__"
 
-    poptracker_items: list[dict[str, any]] = parse_items(items)
+    poptracker_items: list[dict[str, any]]
+    item_values: dict[str, dict[str, int]]
+    poptracker_items, item_values = parse_items(items)
     item_groups: dict[str, list[str]] = get_item_groups(items)
     input_layout: list[dict[str, any]] = build_item_layout(item_groups, 10)
     write_json_file(poptracker_items, args.output_path, "items/items.json")
@@ -71,7 +73,7 @@ if __name__ == "__main__":
     total_square_count: int = 0
     locations_file_paths: list[str] = []
     map_names: set[str] = set()
-    functions: dict[str, bool] = {}
+    functions: dict[str, int] = {}
     for group, locations_in_group in grouped_locations.items():
         total_square_count, new_map_names, poptracker_locations, new_functions = \
             build_locations_json(locations_in_group, regions, region_graph, item_groups, visibility_options,
@@ -114,7 +116,7 @@ if __name__ == "__main__":
                   "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
                   "try again if you need IDs from the datapackage.")
     starting_index: int = game["starting_index"] if "starting_index" in game else 0
-    write_item_group_lua_script(item_groups, args.output_path)
+    write_data_lua_script(item_groups, item_values, args.output_path)
     write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, starting_index, location_name_to_id, args.output_path)
     copy_default_files(items, poptracker_options, map_names, args.output_path)
