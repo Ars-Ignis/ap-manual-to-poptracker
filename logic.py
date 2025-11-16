@@ -9,7 +9,12 @@ BUILT_IN_FUNCTIONS = [
     "OptAll",
     "YamlEnabled",
     "YamlDisabled",
-    "YamlCompare",
+    "YamlCompare_EQ",
+    "YamlCompare_NE",
+    "YamlCompare_LT",
+    "YamlCompare_LE",
+    "YamlCompare_GT",
+    "YamlCompare_GE",
 ]
 
 
@@ -29,6 +34,59 @@ class Logic(NamedTuple):
     prim_value: str
 
 
+def handle_yamlcompare(parameter: str) -> tuple[str, str]:
+    function_name: str
+    option_name: str
+    value: str
+    if "==" in parameter:
+        option_name, value = parameter.split("==")
+        function_name: str = "YamlCompare_EQ"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_NE"
+            option_name = option_name.lstrip("!")
+    elif '!=' in parameter:
+        option_name, value = parameter.split("!=")
+        function_name: str = "YamlCompare_NE"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_EQ"
+            option_name = option_name.lstrip("!")
+    elif '>=' in parameter:
+        option_name, value = parameter.split(">=")
+        function_name: str = "YamlCompare_GE"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_LT"
+            option_name = option_name.lstrip("!")
+    elif '<=' in parameter:
+        option_name, value = parameter.split("<=")
+        function_name: str = "YamlCompare_LE"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_GT"
+            option_name = option_name.lstrip("!")
+    elif '=' in parameter:
+        option_name, value = parameter.split("=")
+        function_name: str = "YamlCompare_EQ"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_NE"
+            option_name = option_name.lstrip("!")
+    elif '<' in parameter:
+        option_name, value = parameter.split("<")
+        function_name: str = "YamlCompare_LT"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_GE"
+            option_name = option_name.lstrip("!")
+    elif '>' in parameter:
+        option_name, value = parameter.split("==")
+        function_name: str = "YamlCompare_GT"
+        if option_name.startswith("!"):
+            function_name = "YamlCompare_LE"
+            option_name = option_name.lstrip("!")
+    else:
+        raise SyntaxError(f"Could not find a valid comparator for YamlCompare! Parameter was {parameter}")
+    option_name = format_to_valid_identifier(option_name)
+    output_parameters: str = f"|{option_name}|{value}"
+    return function_name, output_parameters
+
+
 def convert_tokens_to_logic(tokens: list[str]) -> Logic:
     if len(tokens) == 1:
         # this is either a string that needs to be tokenized and parsed, or a primitive
@@ -46,19 +104,16 @@ def convert_tokens_to_logic(tokens: list[str]) -> Logic:
                 if function_name == "ItemValue":
                     # delimiter is a colon
                     value_category, _, target_value = function_params.partition(":")
-                    modified_param_string = "|" + value_category.rstrip() + "|" + target_value.lstrip()
+                    modified_param_string = "|" + value_category.strip() + "|" + target_value.strip()
                 elif function_name == "YamlCompare":
-                    # delimiter is whitespace
-                    param_list: list[str] = function_params.split()
-                    if len(param_list) != 3:
-                        raise SyntaxError(f"YamlCompare takes exactly three parameters, separated by whitespace! "
-                                          f"Parameters found: {function_params}")
-                    modified_param_string = "|" + "|".join(param_list)
+                    # special function just to handle this nonsense
+                    new_function_name, modified_param_string = handle_yamlcompare(function_params)
+                    function_string = f"${new_function_name}"
                 else:
                     # delimiter is a comma
                     param_list: list[str] = function_params.split(",")
                     for param in param_list:
-                        modified_param_string += "|" + param.lstrip().rstrip()
+                        modified_param_string += "|" + param.strip()
                 function_string += modified_param_string
             return Logic(op=Operator.PRIMITIVE, operands=[], prim_value=function_string)
         else:

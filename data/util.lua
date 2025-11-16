@@ -35,3 +35,43 @@ function ItemValue(value_category_name, target_value)
     end
     return false
 end
+
+
+function YamlEnabled(option)
+    return Tracker:ProviderCountForCode(option) > 0
+end
+
+
+function YamlDisabled(option)
+    return Tracker:ProviderCountForCode(option) == 0
+end
+
+
+function YamlCompare_EQ(option, value)
+    return Tracker:ProviderCountForCode(option) == tonumber(value)
+end
+
+
+function YamlCompare_NE(option, value)
+    return Tracker:ProviderCountForCode(option) ~= tonumber(value)
+end
+
+
+function YamlCompare_LT(option, value)
+    return Tracker:ProviderCountForCode(option) < tonumber(value)
+end
+
+
+function YamlCompare_LE(option, value)
+    return Tracker:ProviderCountForCode(option) <= tonumber(value)
+end
+
+
+function YamlCompare_GT(option, value)
+    return Tracker:ProviderCountForCode(option) > tonumber(value)
+end
+
+
+function YamlCompare_GE(option, value)
+    return Tracker:ProviderCountForCode(option) >= tonumber(value)
+end
