@@ -29,7 +29,13 @@ function onClear(slot_data)
         for key, value in pairs(SLOT_DATA) do
             local flag_obj = Tracker:FindObjectForCode(key)
             if flag_obj ~= nil then
-                flag_obj.Active = (v ~= 0)
+                if flag_obj.Type == "toggle" then
+                    flag_obj.Active = (value ~= 0)
+                elseif flag_obj.Type == "consumable" then
+                    flag_obj.AcquiredCount = value
+                elseif flag_obj.Type == "progressive" then
+                    flag_obj.CurrentStage = value
+                end
             end
         end
     end

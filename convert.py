@@ -34,11 +34,13 @@ if __name__ == "__main__":
         regions_json = apworld.read(f"{apworld_name}/data/regions.json").decode("utf-8")
         categories_json = apworld.read(f"{apworld_name}/data/categories.json").decode("utf-8")
         game_json = apworld.read(f"{apworld_name}/data/game.json").decode("utf-8")
+        options_json = apworld.read(f"{apworld_name}/data/options.json").decode("utf-8")
         items = json.loads(items_json)
         locations = json.loads(locations_json)
         regions = json.loads(regions_json)
         categories = json.loads(categories_json)
         game = json.loads(game_json)
+        options = json.loads(options_json)
 
     for location in locations:
         if "region" not in location:
@@ -57,17 +59,17 @@ if __name__ == "__main__":
     grouped_locations: dict[str, list[dict[str, any]]] = group_locations_by_key("category", locations)
 
     visibility_options: dict[str, list[str]] = {}
-    poptracker_options: set[str] = set()
+    category_options: set[str] = set()
     for category, category_data in categories.items():
         if "yaml_option" in category_data:
             visibility_options[category] = []
             for option_name in category_data["yaml_option"]:
                 visibility_options[category].append(option_name)
-                poptracker_options.add(option_name.lstrip("!"))
+                category_options.add(option_name.lstrip("!"))
 
-    poptracker_option_items: list[dict[str, any]] = build_option_items(poptracker_options)
+    poptracker_option_items: list[dict[str, any]] = build_option_items(options, category_options)
     write_json_file(poptracker_option_items, args.output_path, "items/options.json")
-    poptracker_option_layout: dict[str, any] = build_option_layout(poptracker_options)
+    poptracker_option_layout: dict[str, any] = build_option_layout(poptracker_option_items)
     write_json_file(poptracker_option_layout, args.output_path, "layouts/options_layout.json")
 
     total_square_count: int = 0
@@ -119,7 +121,7 @@ if __name__ == "__main__":
     write_data_lua_script(item_groups, item_values, args.output_path)
     write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, starting_index, location_name_to_id, args.output_path)
-    copy_default_files(items, poptracker_options, map_names, args.output_path)
+    copy_default_files(items, poptracker_option_items, map_names, args.output_path)
 
     tracker_json_object: dict[str, any] = {"display_name": "Map Tracker", "flags": ["ap", "apmanual"]}
     variants_json_object: dict[str, any] = {"tracker": tracker_json_object}

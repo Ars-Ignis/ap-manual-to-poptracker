@@ -124,7 +124,7 @@ def write_location_mapping_script(locations: list[dict[str, any]],
         file.write(location_to_id_string + id_to_location_string)
 
 
-def copy_default_files(items: list[dict[str, any]], options: list[str], map_names: set[str], pack_root: str) -> None:
+def copy_default_files(items: list[dict[str, any]], options: list[dict[str, any]], map_names: set[str], pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     item_images_dirpath: str = os.path.join(pack_root, "images/items/")
@@ -142,7 +142,7 @@ def copy_default_files(items: list[dict[str, any]], options: list[str], map_name
     if not os.path.exists(option_images_dirpath):
         os.makedirs(option_images_dirpath)
     for option in options:
-        image_filename = f"{option}.png"
+        image_filename = f"{option['name']}.png"
         item_image_filepath = os.path.join(option_images_dirpath, image_filename)
         if not os.path.exists(item_image_filepath):
             shutil.copyfile("./data/default_item_option_image.png", item_image_filepath)
