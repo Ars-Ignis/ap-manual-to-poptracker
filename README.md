@@ -28,7 +28,7 @@ That's it!
 There are additionally the following optional parameters:
 - `--output_path`: the directory where you want your PopTracker pack to be created. The directory will be created if it 
 does not already exist. If not provided, it defaults to a folder named `poptracker` adjacent to the APWorld.
-- `--datapackage_URL`: [**DEPRECATED**: As of 1.4.0, this should no longer be necessary; it's still available just in case 
+- `--datapackage_URL`: [**DEPRECATED**: As of 2.0.0, this should no longer be necessary; it's still available just in case 
 you run into issues, however.] The URL of an Archipelago datapackage that include your Manual APWorld. Most likely found by 
 running your own copy of the WebHost from source. If you're not sure how to do that, don't worry about it; it is likely 
 to work without it, and at worst you'll need to manually update the `item_mapping.lua` and `location_mapping.lua` files 
@@ -76,5 +76,5 @@ This will place all the locations in the region named `Scenario 8` into the map 
 As previously mentioned, this tool only produces placeholder images and arbitrary location coordinates. Additionally, it
 only works with the raw json data in the APWorld; if your Manual APWorld makes extensive use of hooks, especially to 
 define logic, items, or locations, this tool won't be able to detect that. It also struggles with slashes in location 
-names, due to how PopTracker identifies sections. I haven't yet come up with a satisfactory solution to this problem,
-but I am working on it.
+names, due to how PopTracker identifies sections. Finally, it is unable to resolve the built-in logic functions OptOne 
+and OptAll, due to not having any information about how many copies of each item were actually generated for a given world.
