@@ -34,7 +34,7 @@ function onClear(slot_data)
                 elseif flag_obj.Type == "consumable" then
                     flag_obj.AcquiredCount = value
                 elseif flag_obj.Type == "progressive" then
-                    flag_obj.CurrentStage = value
+                    flag_obj.CurrentStage = STAGE_MAPPINGS[key][value]
                 end
             end
         end

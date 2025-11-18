@@ -44,7 +44,7 @@ def build_option_items(options_json: dict[str, any], category_options: set[str])
                 user_option_dict["type"] = "progressive"
                 user_option_dict["allow_disabled"] = False
                 stages_list: list[dict[str, any]] = []
-                for choice_name, choice_value in user_option_data["values"]:
+                for choice_name, choice_value in user_option_data["values"].items():
                     valid_choice_name: str = format_to_valid_identifier(choice_name)
                     choice_code: str = f"{valid_name}_{valid_choice_name}"
                     stage_dict: dict[str, any] = {

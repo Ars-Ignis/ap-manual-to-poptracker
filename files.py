@@ -142,10 +142,17 @@ def copy_default_files(items: list[dict[str, any]], options: list[dict[str, any]
     if not os.path.exists(option_images_dirpath):
         os.makedirs(option_images_dirpath)
     for option in options:
-        image_filename = f"{option['name']}.png"
-        item_image_filepath = os.path.join(option_images_dirpath, image_filename)
-        if not os.path.exists(item_image_filepath):
-            shutil.copyfile("./data/default_item_option_image.png", item_image_filepath)
+        if option["type"] == "progressive":
+            for option_stage in option["stages"]:
+                image_filename = f"{option_stage['codes']}.png"
+                option_image_filepath = os.path.join(option_images_dirpath, image_filename)
+                if not os.path.exists(option_image_filepath):
+                    shutil.copyfile("./data/default_item_option_image.png", option_image_filepath)
+        else:
+            image_filename = f"{option['name']}.png"
+            option_image_filepath = os.path.join(option_images_dirpath, image_filename)
+            if not os.path.exists(option_image_filepath):
+                shutil.copyfile("./data/default_item_option_image.png", option_image_filepath)
     ap_lua_filepath = os.path.join(pack_root, "scripts/archipelago/archipelago.lua")
     if not os.path.exists(os.path.dirname(ap_lua_filepath)):
         os.makedirs(os.path.dirname(ap_lua_filepath))
@@ -166,7 +173,10 @@ def copy_default_files(items: list[dict[str, any]], options: list[dict[str, any]
             shutil.copyfile("./data/placeholder_map.png", placeholder_map_image_filepath)
 
 
-def write_data_lua_script(item_groups: dict[str, list[str]], item_values: dict[str, dict[str, int]], pack_root: str) -> None:
+def write_data_lua_script(item_groups: dict[str, list[str]],
+                          item_values: dict[str, dict[str, int]],
+                          options: dict[str, any],
+                          pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
     full_filepath: str = os.path.join(pack_root, "scripts/item_data.lua")
@@ -204,8 +214,25 @@ def write_data_lua_script(item_groups: dict[str, list[str]], item_values: dict[s
                 file_contents += ", "
             file_contents += f"[\"{to_snake_case(item_name)}\"] = {item_value}"
         file_contents += "}"
+    file_contents += "\n}\n\n\nSTAGE_MAPPINGS = {\n"
+    if "user" in options:
+        first_option: bool = True
+        for option_name, option_data in options["user"].items():
+            if "type" not in option_data or option_data["type"] != "Choice":
+                continue
+            if first_option:
+                first_option = False
+            else:
+                file_contents += ",\n"
+            file_contents += f"\t[\"{format_to_valid_identifier(option_name)}\"] = {{"
+            value_index: int = 0
+            for value in option_data["values"].values():
+                if value_index:
+                    file_contents += ", "
+                file_contents += f"[{value}] = {value_index}"
+                value_index += 1
+            file_contents += "}"
     file_contents += "\n}"
-
     with open(full_filepath, 'w') as file:
         file.write(file_contents)
 

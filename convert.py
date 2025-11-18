@@ -118,7 +118,7 @@ if __name__ == "__main__":
                   "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
                   "try again if you need IDs from the datapackage.")
     starting_index: int = game["starting_index"] if "starting_index" in game else 0
-    write_data_lua_script(item_groups, item_values, args.output_path)
+    write_data_lua_script(item_groups, item_values, options, args.output_path)
     write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
     write_location_mapping_script(locations, starting_index, location_name_to_id, args.output_path)
     copy_default_files(items, poptracker_option_items, map_names, args.output_path)
