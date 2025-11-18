@@ -19,7 +19,8 @@ script takes care of everything else, including:
 ## How do I use it?
 1. [Install Python](https://www.python.org/downloads/)
 2. Download the source code
-3. In the directory where you downloaded the source code, open a command prompt.
+3. In the directory where you downloaded the source code, open a command prompt. (On Windows, this can be done by 
+opening the folder, clicking the address bar, typing `cmd`, and pressing Enter.)
 4. In that command prompt, run `python convert.py <path_to_Manual_APWorld>`, where `<path_to_Manual_APWorld>` is the 
 full filepath to the Manual APWorld you're trying to convert.
 
