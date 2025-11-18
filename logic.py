@@ -5,8 +5,6 @@ from utils import *
 
 BUILT_IN_FUNCTIONS = [
     "ItemValue",
-    "OptOne",
-    "OptAll",
     "YamlEnabled",
     "YamlDisabled",
     "YamlCompare_EQ",

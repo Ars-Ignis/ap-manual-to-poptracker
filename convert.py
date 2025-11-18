@@ -137,6 +137,7 @@ if __name__ == "__main__":
     write_json_file(manifest_json_object, args.output_path, "manifest.json")
 
     if functions:
+        opt_one_or_all_found: bool = False
         print("========================================================")
         print("| WARNING! You have custom logic hooks in your logic!  |")
         print("| You will need to fill out the function stubs in      |")
@@ -145,7 +146,17 @@ if __name__ == "__main__":
         print("|                                                      |")
         print("| Custom functions found:                              |")
         for function_name in sorted(functions.keys()):
+            if function_name in ["OptOne", "OptAll"]:
+                opt_one_or_all_found = True
+                continue
             log_line: str = f"| -{function_name}".ljust(54) + " |"
             print(log_line)
+        if opt_one_or_all_found:
+            print("|                                                      |")
+            print("| Additionally, you're using the built-in functions    |")
+            print("| OptOne, OptAll, or both. These are not supported by  |")
+            print("| this tool, so you will also need to fill out those   |")
+            print("| lua stubs as well. This may involve custom Python    |")
+            print("| hooks in your manual apworld.                        |")
         print("========================================================")
     print(f"\nAll done! Your PopTracker pack is located at {args.output_path}")
