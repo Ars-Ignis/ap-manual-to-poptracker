@@ -12,8 +12,6 @@ if __name__ == "__main__":
     parser.add_argument("--output_path", help="The output directory to build the PopTracker pack in. If not provided, "
                                               "will default to a folder named poptracker in the directory containing the"
                                               " APWorld.")
-    parser.add_argument("--datapackage_URL", help="URL for finding location and item IDs; will be estimated if not "
-                                                  "provided")
     parser.add_argument("--author", help="The name to use as the author of the PopTracker pack")
     args = parser.parse_args()
     if not os.path.isabs(args.apworld_path):
@@ -98,25 +96,6 @@ if __name__ == "__main__":
 
     item_name_to_id = None
     location_name_to_id = None
-    if args.datapackage_URL:
-        try:
-            import requests
-            try:
-                games_dict: dict[str, any] = requests.get(args.datapackage_URL).json()["games"]
-                if game_name in games_dict:
-                    item_name_to_id: dict[str, int] = games_dict[game_name]["item_name_to_id"]
-                    location_name_to_id: dict[str, int] = games_dict[game_name]["location_name_to_id"]
-                else:
-                    print(f"Warning! The datapackage at {args.datapackage_URL} does not contain an entry for game "
-                          f"{game_name}. Are you sure your world is running on that web host? Continuing with "
-                          f"estimated item and location IDs.")
-            except requests.exceptions.RequestException:
-                print(f"Warning! could not reach and read the datapackage at {args.datapackage_URL}. Continuing with "
-                      f"estimated item and location IDs.")
-        except ImportError:
-            print("Warning! You are trying to use a datapackage URL without the requests module installed. " 
-                  "Continuing with estimated item and location IDs.  Please run \"pip install requests\" and "
-                  "try again if you need IDs from the datapackage.")
     starting_index: int = game["starting_index"] if "starting_index" in game else 0
     write_data_lua_script(item_groups, item_values, options, args.output_path)
     write_item_mapping_script(items, starting_index, item_name_to_id, args.output_path)
