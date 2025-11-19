@@ -68,7 +68,6 @@ def write_custom_util_lua_file(functions: dict[str, int], pack_root: str) -> Non
 
 def write_item_mapping_script(items: list[dict[str, any]],
                               starting_index: int,
-                              item_name_to_id: dict[str, int],
                               pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
@@ -83,12 +82,7 @@ def write_item_mapping_script(items: list[dict[str, any]],
         if (("progression" in item and item["progression"]) or
            ("progression_skip_balancing" in item and item["progression_skip_balancing"])):
             item_type: str = "consumable" if "count" in item and int(item["count"]) > 1 else "toggle"
-            if item_name_to_id is None:
-                file_content += \
-                    f"    [{calculated_item_id}] = {{\"{to_snake_case(item['name'])}\", \"{item_type}\"}},\n"
-            else:
-                file_content += \
-                    f"    [{item_name_to_id[item['name']]}] = {{\"{to_snake_case(item['name'])}\", \"{item_type}\"}},\n"
+            file_content += f"    [{calculated_item_id}] = {{\"{to_snake_case(item['name'])}\", \"{item_type}\"}},\n"
         calculated_item_id += 1
     file_content += "}"
     with open(full_filepath, 'w', encoding="utf_8") as file:
@@ -97,7 +91,6 @@ def write_item_mapping_script(items: list[dict[str, any]],
 
 def write_location_mapping_script(locations: list[dict[str, any]],
                                   starting_index: int,
-                                  location_name_to_id: dict[str, int],
                                   pack_root: str) -> None:
     if not os.path.isabs(pack_root):
         raise SyntaxError(f"Pack root must be an absolute path! Given pack root: {pack_root}")
@@ -111,12 +104,8 @@ def write_location_mapping_script(locations: list[dict[str, any]],
         if "id" in location and location["id"] > calculated_location_id:
             calculated_location_id = location["id"]
         section_identifier: str = f"{location['category'][0]}/{location['region']}/{location['name']}"
-        if location_name_to_id is None:
-            id_to_location_string += f"    [{calculated_location_id}] = {{\"@{section_identifier}\"}},\n"
-            location_to_id_string += f"    [\"{section_identifier}\"] = {calculated_location_id},\n"
-        else:
-            id_to_location_string += f"    [{location_name_to_id[location['name']]}] = {{\"@{section_identifier}\"}},\n"
-            location_to_id_string += f"    [\"{section_identifier}\"] = {location_name_to_id[location['name']]},\n"
+        id_to_location_string += f"    [{calculated_location_id}] = {{\"@{section_identifier}\"}},\n"
+        location_to_id_string += f"    [\"{section_identifier}\"] = {calculated_location_id},\n"
         calculated_location_id += 1
     location_to_id_string += "}\n"
     id_to_location_string += "}\n"
