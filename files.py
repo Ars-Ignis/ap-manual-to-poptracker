@@ -103,7 +103,9 @@ def write_location_mapping_script(locations: list[dict[str, any]],
     for location in locations:
         if "id" in location and location["id"] > calculated_location_id:
             calculated_location_id = location["id"]
-        section_identifier: str = f"{location['category'][0]}/{location['region']}/{location['name']}"
+        section_identifier: str = f"{location['category'][0].replace('/', '-')}/" \
+                                  f"{location['region'].replace('/', '-')}/" \
+                                  f"{location['name'].replace('/', '-')}"
         id_to_location_string += f"    [{calculated_location_id}] = {{\"@{section_identifier}\"}},\n"
         location_to_id_string += f"    [\"{section_identifier}\"] = {calculated_location_id},\n"
         calculated_location_id += 1

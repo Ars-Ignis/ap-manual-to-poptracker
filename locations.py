@@ -94,7 +94,7 @@ def build_locations_json(locations: list[dict[str, any]],
         y: int = -1
         for location in region_locations:
             section_info: dict[str, any] = {
-                "name": location["name"],
+                "name": location["name"].replace("/", "-"),
                 "item_count": 1
             }
             if "requires" in location and location["requires"]:
@@ -137,13 +137,13 @@ def build_locations_json(locations: list[dict[str, any]],
         region_logic_string, new_functions = convert_dnf_logic_to_json_object(reduce_logic(region_logic, item_groups))
         functions |= new_functions
         region_entry: dict[str, any] = {
-            "name": region,
+            "name": region.replace("/", "-"),
             "access_rules": region_logic_string,
             "sections": sections,
             "map_locations": [map_location]
         }
         output.append(region_entry)
-    top_level_json: dict[str, any] = {"name": parent_group, "children": output}
+    top_level_json: dict[str, any] = {"name": parent_group.replace('/', '-'), "children": output}
     return total_square_count, map_names, [top_level_json], functions
 
 
