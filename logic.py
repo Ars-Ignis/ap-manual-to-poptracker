@@ -148,13 +148,7 @@ def convert_tokens_to_logic(tokens: list[str]) -> Logic:
         raise SyntaxError(f"Found two operands with no operator {tokens}")
 
 
-def parse_logic(logic: str|list[str]) -> Logic:
-    if isinstance(logic, list):
-        logic_operands: list[Operand] = []
-        for primitive_string in logic:
-            primitive_operand: Operand = Operand(value=Logic(op=Operator.PRIMITIVE, operands=[], prim_value=primitive_string))
-            logic_operands.append(primitive_operand)
-        return Logic(op=Operator.AND, operands=logic_operands, prim_value="")
+def parse_logic(logic: str) -> Logic:
     index: int = 0
     tokens: list[str] = []
     # tokenize the logic
