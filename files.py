@@ -11,7 +11,7 @@ def write_json_file(json_object: any, pack_root: str, file_location: str) -> Non
     full_filepath: str = os.path.join(pack_root, file_location)
     if not os.path.exists(os.path.dirname(full_filepath)):
         os.makedirs(os.path.dirname(full_filepath))
-    with open(full_filepath, 'w') as file:
+    with open(full_filepath, 'w', encoding="utf_8") as file:
         json_dump = json.dumps(json_object, indent=4)
         file.write(json_dump)
 
@@ -37,7 +37,7 @@ def write_lua_init_file(location_file_paths: list[str], has_custom_lua: bool, pa
     file_contents += "ScriptHost:LoadScript(\"scripts/custom_util.lua\")\n" if has_custom_lua else ""
     for location_file_path in location_file_paths:
         file_contents += f"Tracker:AddLocations(\"{location_file_path}\")\n"
-    with open(full_filepath, 'w') as file:
+    with open(full_filepath, 'w', encoding="utf_8") as file:
         file.write(file_contents)
 
 
@@ -62,7 +62,7 @@ def write_custom_util_lua_file(functions: dict[str, int], pack_root: str) -> Non
         file_content += "\t-- Implement your logic here. Parameters are strings and numbered from left to right.\n"
         file_content += "\treturn true\n"
         file_content += "end\n\n"
-    with open(full_filepath, 'w') as file:
+    with open(full_filepath, 'w', encoding="utf_8") as file:
         file.write(file_content)
 
 
@@ -91,7 +91,7 @@ def write_item_mapping_script(items: list[dict[str, any]],
                     f"    [{item_name_to_id[item['name']]}] = {{\"{to_snake_case(item['name'])}\", \"{item_type}\"}},\n"
         calculated_item_id += 1
     file_content += "}"
-    with open(full_filepath, 'w') as file:
+    with open(full_filepath, 'w', encoding="utf_8") as file:
         file.write(file_content)
 
 
@@ -120,7 +120,7 @@ def write_location_mapping_script(locations: list[dict[str, any]],
         calculated_location_id += 1
     location_to_id_string += "}\n"
     id_to_location_string += "}\n"
-    with open(full_filepath, 'w') as file:
+    with open(full_filepath, 'w', encoding="utf_8") as file:
         file.write(location_to_id_string + id_to_location_string)
 
 
@@ -233,6 +233,6 @@ def write_data_lua_script(item_groups: dict[str, list[str]],
                 value_index += 1
             file_contents += "}"
     file_contents += "\n}"
-    with open(full_filepath, 'w') as file:
+    with open(full_filepath, 'w', encoding="utf_8") as file:
         file.write(file_contents)
 
