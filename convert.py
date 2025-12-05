@@ -1,10 +1,13 @@
 import argparse
+import json
+import os
 import zipfile as zip
+
+from files import *
 from items import *
 from locations import *
-from files import *
-from utils import *
 from options import *
+from utils import to_snake_case
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Manual APWorld to PopTracker Pack converter.")
@@ -15,30 +18,45 @@ if __name__ == "__main__":
     parser.add_argument("--author", help="The name to use as the author of the PopTracker pack")
     args = parser.parse_args()
     if not os.path.isabs(args.apworld_path):
-        print(f"Path is not an absolute path! {args.apworld_path}")
-        exit(0)
+        args.apworld_path = os.path.abspath(args.apworld_path)
     # Confirm the .apworld path is correct, and points to a zip file
-    if not zip.is_zipfile(args.apworld_path):
-        print(f"Path does not point to a valid zip file! {args.apworld_path}")
-        exit(0)
-    apworld_name: str = os.path.splitext(os.path.basename(args.apworld_path))[0]
-    if not args.output_path:
-        apworld_dir: str = os.path.split(args.apworld_path)[0]
-        args.output_path = os.path.join(apworld_dir, "poptracker")
-    # Read and parse the relevant JSON files
-    with zip.ZipFile(args.apworld_path) as apworld:
-        items_json = apworld.read(f"{apworld_name}/data/items.json").decode("utf-8")
-        locations_json = apworld.read(f"{apworld_name}/data/locations.json").decode("utf-8")
-        regions_json = apworld.read(f"{apworld_name}/data/regions.json").decode("utf-8")
-        categories_json = apworld.read(f"{apworld_name}/data/categories.json").decode("utf-8")
-        game_json = apworld.read(f"{apworld_name}/data/game.json").decode("utf-8")
-        options_json = apworld.read(f"{apworld_name}/data/options.json").decode("utf-8")
-        items = json.loads(items_json)
-        locations = json.loads(locations_json)
-        regions = json.loads(regions_json)
-        categories = json.loads(categories_json)
-        game = json.loads(game_json)
-        options = json.loads(options_json)
+    if zip.is_zipfile(args.apworld_path):
+        apworld_name: str = os.path.splitext(os.path.basename(args.apworld_path))[0]
+        if not args.output_path:
+            apworld_dir: str = os.path.split(args.apworld_path)[0]
+            args.output_path = os.path.join(apworld_dir, "poptracker")
+        # Read the relevant JSON files
+        with zip.ZipFile(args.apworld_path) as apworld:
+            items_json = apworld.read(f"{apworld_name}/data/items.json").decode("utf-8")
+            locations_json = apworld.read(f"{apworld_name}/data/locations.json").decode("utf-8")
+            regions_json = apworld.read(f"{apworld_name}/data/regions.json").decode("utf-8")
+            categories_json = apworld.read(f"{apworld_name}/data/categories.json").decode("utf-8")
+            game_json = apworld.read(f"{apworld_name}/data/game.json").decode("utf-8")
+            options_json = apworld.read(f"{apworld_name}/data/options.json").decode("utf-8")
+    else:
+        apworld_name = os.path.split(args.apworld_path)[1]
+        if not args.output_path:
+            args.output_path = os.path.join(args.apworld_path, "tracker")
+
+        with open(os.path.join(args.apworld_path, "data", "items.json"), "r", encoding="utf-8") as f:
+            items_json = f.read()
+        with open(os.path.join(args.apworld_path, "data", "locations.json"), "r", encoding="utf-8") as f:
+            locations_json = f.read()
+        with open(os.path.join(args.apworld_path, "data", "regions.json"), "r", encoding="utf-8") as f:
+            regions_json = f.read()
+        with open(os.path.join(args.apworld_path, "data", "categories.json"), "r", encoding="utf-8") as f:
+            categories_json = f.read()
+        with open(os.path.join(args.apworld_path, "data", "game.json"), "r", encoding="utf-8") as f:
+            game_json = f.read()
+        with open(os.path.join(args.apworld_path, "data", "options.json"), "r", encoding="utf-8") as f:
+            options_json = f.read()
+
+    items = json.loads(items_json)
+    locations = json.loads(locations_json)
+    regions = json.loads(regions_json)
+    categories = json.loads(categories_json)
+    game = json.loads(game_json)
+    options = json.loads(options_json)
 
     for location in locations:
         if "region" not in location:
