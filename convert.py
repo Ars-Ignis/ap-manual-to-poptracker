@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     game_name: str = f"Manual_{game['game']}_{game['creator']}"
 
-    starting_index: int = game["starting_index"] if "starting_index" in game else 0
+    starting_index: int = game["starting_index"] if "starting_index" in game else 1
     write_data_lua_script(item_groups, item_values, options, args.output_path)
     write_item_mapping_script(items, starting_index, args.output_path)
     write_location_mapping_script(locations, starting_index, args.output_path)
