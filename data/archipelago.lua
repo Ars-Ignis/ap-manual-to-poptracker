@@ -3,12 +3,36 @@ ScriptHost:LoadScript("scripts/archipelago/location_mapping.lua")
 
 CUR_INDEX = -1
 SLOT_DATA = nil
+HINT_DATASTORAGE_KEY = nil
 
---AUTOTRACKER_ENABLE_DEBUG_LOGGING_AP = true
+if Highlight then --checking to see if we're on a version of PopTracker that has highlighting
+    HIGHLIGHT_TABLE = {
+        [0] = Highlight.Unspecified,
+        [10] = Highlight.NoPriority,
+        [20] = Highlight.Avoid,
+        [30] = Highlight.Priority,
+        [40] = Highlight.None,
+    }
+end
 
-function onSetReply(key, value, _)
+
+function onDataStorageUpdate(key, value, oldValue)
     if AUTOTRACKER_ENABLE_DEBUG_LOGGING_AP then
-        print(string.format("called onSetReply: %s, %s", key, value))
+        print(string.format("called onDataStorageUpdate with params key: %s, value: %s, oldValue: %s", key, value, oldValue))
+    end
+    if key == HINT_DATASTORAGE_KEY and value ~= oldValue then
+        for k, hint in pairs(value) do
+            if AUTOTRACKER_ENABLE_DEBUG_LOGGING_AP then
+                print(string.format("table value: key: %s, value: %s", k, hint))
+                for hint_key, hint_value in pairs(hint) do
+                    print(string.format("hint value: key: %s, value: %s", hint_key, hint_value))
+                end
+            end
+            if hint["finding_player"] == Archipelago.PlayerNumber then
+                local hinted_location = Tracker:FindObjectForCode(ID_TO_LOCATION_MAP[hint["location"]][1])
+                hinted_location.Highlight = HIGHLIGHT_TABLE[hint["status"]]
+            end
+        end
     end
 end
 
@@ -52,6 +76,7 @@ function onClear(slot_data)
                 else
                     obj.Active = false
                 end
+                obj.Highlight = Highlight.None
             elseif AUTOTRACKER_ENABLE_DEBUG_LOGGING_AP then
                 print(string.format("onClear: could not find object for code %s", v[1]))
             end
@@ -79,6 +104,17 @@ function onClear(slot_data)
                 print(string.format("onClear: could not find object for code %s", v[1]))
             end
         end
+    end
+
+    if Archipelago.PlayerNumber > -1 and Highlight then
+        HINT_DATASTORAGE_KEY = "_read_hints_" .. Archipelago.TeamNumber .. "_" .. Archipelago.PlayerNumber
+        if AUTOTRACKER_ENABLE_DEBUG_LOGGING_AP then
+            print(string.format("onClear: datastorage hint key %s", HINT_DATASTORAGE_KEY))
+        end
+        Archipelago:SetNotify({HINT_DATASTORAGE_KEY})
+        Archipelago:Get({HINT_DATASTORAGE_KEY})
+    else
+        HINT_DATASTORAGE_KEY = ""
     end
 end
 
@@ -191,7 +227,7 @@ ScriptHost:AddOnLocationSectionChangedHandler("manual", onLocationSectionChanged
 Archipelago:AddClearHandler("clear handler", onClear)
 Archipelago:AddItemHandler("item handler", onItem)
 Archipelago:AddLocationHandler("location handler", onLocation)
--- Archipelago:AddSetReplyHandler("set reply handler", onSetReply)
+Archipelago:AddSetReplyHandler("datastorage update handler", onDataStorageUpdate)
+Archipelago:AddRetrievedHandler("datastorage update handler", onDataStorageUpdate)
 -- Archipelago:AddScoutHandler("scout handler", onScout)
 -- Archipelago:AddBouncedHandler("bounce handler", onBounce)
--- Archipelago:AddRetrievedHandler("retrieved", retrieved)
